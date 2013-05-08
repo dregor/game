@@ -1,31 +1,55 @@
 import pygame,sys
 from pygame.locals import *
 from bactery import Bactery
-from pygame.color import *
 from debug import Debuger
 
+import Box2D
+from Box2D.b2 import *
+
 class Game():
-    game_name = 'Game'
-    playing = False
+    GAME_NAME = 'Game'
+        
+    SCREEN_WIDTH, SCREEN_HEIGHT=640,480
+    PPM  = 20.
+    FPS = 60
+    TIME_STEP = 1./FPS
+    
     g_objects = []
-    fps = 60
-    dt = 1./fps
+    
+    playing = False
     debug = True
 
     def __init__(self):
         pygame.init()
         self.debuger = Debuger(self)
         self.font = pygame.font.SysFont('Arial',12)
-        self.screen = pygame.display.set_mode((640,320))
-        pygame.display.set_caption(self.game_name)
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH,self.SCREEN_HEIGHT))
+        pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
-        self.g_objects.append( Bactery(self) )
+        self.world = world(gravity=(0,-10),doSleep=True)
+        self.g_objects.append( Bactery(self,(10,15)) )
+        self.ground_body = self.world.CreateStaticBody(
+                                                       position=(0,1),
+                                                       shapes = polygonShape(box=(50,5))
+                                                       )
 
     def event(self):
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
+                
+            if event.type == KEYDOWN and event.key == K_F1:
+                if self.debug: 
+                    self.debug = False
+                else:
+                    self.debug = True
+            
+            if event.type == KEYDOWN and event.key == K_p:
+                if self.playing: 
+                    self.playing = False
+                else:
+                    self.playing= True
 
     def text_out(self, color, size, text):
         if pygame.font:
@@ -33,13 +57,13 @@ class Game():
             text = font.render(text, 4, color )
             textpos = text.get_rect()
             textpos.center = self.screen.get_rect().center
-            screen.blit(text, textpos)
+            self.screen.blit(text, textpos)
 
     def start(self):
         self.playing = True
 
     def stop(self):
-        slef.playing = False
+        self.playing = False
 
     def draw(self):
         background = pygame.Surface(self.screen.get_size()).convert()
@@ -56,7 +80,8 @@ class Game():
         pygame.display.update()
 
     def update(self):
-        self.clock.tick(self.fps)
+        self.clock.tick(self.FPS)
+        self.world.Step(self.TIME_STEP,10,10)
         for item in self.g_objects:
             item.update()
 
@@ -68,3 +93,4 @@ while True:
     if game.playing == True:
         game.update()
     game.draw()
+    

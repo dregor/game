@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.pyc
 *.log
 *.db
@@ -9,4 +10,10 @@
 *.rar
 *.tar.bz2
 *.tar.gz
-
+*.egg
+*.egg-info
+.installed.cfg
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
