@@ -3,25 +3,23 @@ from pygame.locals import *
 from bactery import Bactery
 from debug import Debuger
 
-import Box2D
-from Box2D.b2 import *
+from Box2D.b2 import world,polygonShape
 
 class Game():
     GAME_NAME = 'Game'
-        
+
     SCREEN_WIDTH, SCREEN_HEIGHT=640,480
     PPM  = 20.
     FPS = 60
     TIME_STEP = 1./FPS
-    
+
     g_objects = []
-    
+
     playing = False
     debug = True
 
     def __init__(self):
         pygame.init()
-        self.debuger = Debuger(self)
         self.font = pygame.font.SysFont('Arial',12)
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH,self.SCREEN_HEIGHT))
         pygame.display.set_caption(self.GAME_NAME)
@@ -32,21 +30,22 @@ class Game():
                                                        position=(0,1),
                                                        shapes = polygonShape(box=(50,5))
                                                        )
+        self.debuger = Debuger(self)
 
     def event(self):
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
-                
+
             if event.type == KEYDOWN and event.key == K_F1:
-                if self.debug: 
+                if self.debug:
                     self.debug = False
                 else:
                     self.debug = True
-            
+
             if event.type == KEYDOWN and event.key == K_p:
-                if self.playing: 
+                if self.playing:
                     self.playing = False
                 else:
                     self.playing= True
@@ -80,10 +79,10 @@ class Game():
         pygame.display.update()
 
     def update(self):
-        self.clock.tick(self.FPS)
         self.world.Step(self.TIME_STEP,10,10)
         for item in self.g_objects:
             item.update()
+        self.clock.tick(self.FPS)
 
 game = Game()
 game.start()
@@ -93,4 +92,3 @@ while True:
     if game.playing == True:
         game.update()
     game.draw()
-    
