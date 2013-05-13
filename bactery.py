@@ -1,5 +1,4 @@
 import pygame
-import Box2D
 from Box2D.b2 import *
 
 class Bactery():
@@ -27,8 +26,8 @@ class Bactery():
         
     def draw(self):
         self.game.screen.blit( self.sprite, ( self.position[0] - self.sprite.get_width()/2, self.position[1]- self.sprite.get_height()/2) )
-        if self.game.debug:
-            self.draw_circle()
+        #if self.game.debug:
+        #    self.draw_circle()
             # pygame.draw.polygon(self.game.screen, (100,100,100), self.debug_vertices)
 
     def update(self):
