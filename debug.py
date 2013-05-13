@@ -3,17 +3,14 @@ from Box2D import *
 from pygame.locals import *
 from pygame.color import *
 
-class DebugDraw(b2Draw):
-    circle_segments = 16
-    surface = None
+class DebugDraw():
 
     def __init__(self, game):
-        super(DebugDraw, self).__init__()
         self.surface = game.screen
         self.game = game
-        self.viewZoom =1.
-        self.viewOffset = (0,0)
-        self.width, self.height = game.SCREEN_WIDTH, game.SCREEN_HEIGHT
+        self.Zoom =1.
+        self.Offset = (0,0)
+        self.width, self.height = game.WIDTH, game.HEIGHT
 
     def StartDraw(self): pass
 
@@ -55,9 +52,9 @@ class DebugDraw(b2Draw):
         else: radius = int(radius)
 
         center = self.to_screen(center_v)
-        pygame.draw.circle(self.surface, (color/2).bytes+[127], center, radius, 0)
+        pygame.draw.circle(self.surface, color, center, radius, 0)
 
-        pygame.draw.circle(self.surface, color.bytes, center, radius, 1)
+        pygame.draw.circle(self.surface, color, center, radius, 1)
 
         p = radius * axis
         pygame.draw.aaline(self.surface, (255,0,0), center, (center[0] - p.x, center[1] + p.y))
@@ -77,10 +74,16 @@ class DebugDraw(b2Draw):
             pygame.draw.polygon(self.surface, color.bytes, vertices, 1)
 
     def DrawCircleShape(self, shape, transform, color):
-        pass
+        #position=transform*shape.pos*self.game.PPM
+        #position=(position[0], self.game.HEIGHT-position[1])
+        #pygame.draw.circle(self.surface, color, [int(x) for x in position], int(shape.radius*self.game.PPM))
+        #pygame.draw.circle(self.surface, (0,0,0), [int(x) for x in position], int(shape.radius*self.game.PPM),3)
+        self.DrawSolidCircle(shape.pos, int(shape.radius*self.game.PPM),1, color)
 
     def DrawPolygonShape(self, shape, transform, color):
-        pass
+        vertices=[(transform*v)*self.game.PPM for v in shape.vertices]
+        vertices=[(v[0], self.game.HEIGHT-v[1]) for v in vertices]
+        pygame.draw.polygon(self.surface, color, vertices)
 
     def DrawShape(self, shape, transform, color):
         if isinstance(shape, b2PolygonShape):
@@ -104,7 +107,7 @@ class DebugDraw(b2Draw):
         xf1, xf2=bodyA.transform, bodyB.transform
         x1, x2=xf1.position, xf2.position
         p1, p2=joint.anchorA, joint.anchorB
-        color=b2Color(0.5, 0.8, 0.8)
+        color=(50, 80, 80, 200)
 
         if isinstance(joint, b2DistanceJoint):
             self.DrawSegment(p1, p2, color)
@@ -124,11 +127,11 @@ class DebugDraw(b2Draw):
     def ManualDraw(self):
 
         colors = {
-            'active'    : b2Color(0.5, 0.5, 0.3),
-            'static'    : b2Color(0.5, 0.9, 0.5),
-            'kinematic' : b2Color(0.5, 0.5, 0.9),
-            'asleep'    : b2Color(0.6, 0.6, 0.6),
-            'default'   : b2Color(0.9, 0.7, 0.7),
+            'active'    : (50, 50, 30),
+            'static'    : (50, 90, 50),
+            'kinematic' : (50, 50, 90),
+            'asleep'    : (60, 60, 60),
+            'default'   : (90, 70, 70),
         }
 
         for body in self.game.world.bodies:
@@ -147,7 +150,7 @@ class DebugDraw(b2Draw):
         for joint in self.game.world.joints:
             self.DrawJoint(joint)
 
-        color=b2Color(0.9, 0.3, 0.9)
+        color=(90, 30, 90, 200)
         for body in self.game.world.bodies:
             if not body.active:
                 continue
@@ -158,7 +161,7 @@ class DebugDraw(b2Draw):
                     self.DrawAABB(shape.getAABB(transform, childIndex), color)
 
     def to_screen(self, pt):
-        return ((pt[0] * self.viewZoom) - self.viewOffset[0], self.height - ((pt[1] * self.viewZoom) - self.viewOffset[1]))
+        return (int((pt[0] * self.game.PPM * self.Zoom) - self.Offset[0]),int( self.height - ((pt[1]* self.game.PPM * self.Zoom) - self.Offset[1])))
 
 
 class Debuger():

@@ -8,7 +8,7 @@ from Box2D.b2 import world,polygonShape
 class Game():
     GAME_NAME = 'Game'
 
-    SCREEN_WIDTH, SCREEN_HEIGHT=640,480
+    WIDTH, HEIGHT=640,480
     PPM  = 20.
     FPS = 60
     TIME_STEP = 1./FPS
@@ -21,7 +21,7 @@ class Game():
     def __init__(self):
         pygame.init()
         self.font = pygame.font.SysFont('Arial',12)
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH,self.SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((self.WIDTH,self.HEIGHT))
         pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
         self.world = world(gravity=(0,-10),doSleep=True)
