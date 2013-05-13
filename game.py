@@ -3,8 +3,7 @@ from pygame.locals import *
 from bactery import Bactery
 from debug import Debuger
 
-import Box2D
-from Box2D.b2 import *
+from Box2D.b2 import world,polygonShape
 
 class Game():
     GAME_NAME = 'Game'
@@ -21,7 +20,6 @@ class Game():
 
     def __init__(self):
         pygame.init()
-        self.debuger = Debuger(self)
         self.font = pygame.font.SysFont('Arial',12)
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH,self.SCREEN_HEIGHT))
         pygame.display.set_caption(self.GAME_NAME)
@@ -32,6 +30,7 @@ class Game():
                                                        position=(0,1),
                                                        shapes = polygonShape(box=(50,5))
                                                        )
+        self.debuger = Debuger(self)
 
     def event(self):
         for event in pygame.event.get():
@@ -80,10 +79,10 @@ class Game():
         pygame.display.update()
 
     def update(self):
-        self.clock.tick(self.FPS)
         self.world.Step(self.TIME_STEP,10,10)
         for item in self.g_objects:
             item.update()
+        self.clock.tick(self.FPS)
 
 game = Game()
 game.start()
