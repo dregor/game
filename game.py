@@ -27,9 +27,10 @@ class Game():
         self.world = world(gravity=(0,-10),doSleep=True)
         self.g_objects.append( Bactery(self,(10,15)) )
         self.ground_body = self.world.CreateStaticBody(
-                                                       position=(0,1),
-                                                       shapes = polygonShape(box=(50,5))
+                                                       position=(15,5),
+                                                       shapes = polygonShape(box=(10,1))
                                                        )
+        self.ground_body.CreateFixture( shape = polygonShape(vertices=[(0,1),(-10,5),(-10,1)]))
         self.debuger = Debuger(self)
 
     def event(self):

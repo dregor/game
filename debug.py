@@ -47,24 +47,26 @@ class DebugDraw():
         center = self.to_screen(center)
         pygame.draw.circle(self.surface, color.bytes, center, radius, drawwidth)
 
-    def DrawSolidCircle(self, center_v, radius, axis, color):
+    def DrawSolidCircle(self, center_v, radius, angle, color):
         if radius < 1: radius = 1
         else: radius = int(radius)
-
+        
         center = self.to_screen(center_v)
         pygame.draw.circle(self.surface, color, center, radius, 0)
-
         pygame.draw.circle(self.surface, color, center, radius, 1)
 
-        p = radius * axis
-        pygame.draw.aaline(self.surface, (255,0,0), center, (center[0] - p.x, center[1] + p.y))
+        pygame.draw.aaline( self.surface, (255,0,0), center, self.axis(angle, radius, center) )
 
     def DrawPolygon(self, in_vertices, vertexCount, color):
         if len(in_vertices) == 2:
             pygame.draw.aaline(self.surface, color.bytes, self.to_screen(in_vertices[0]), self.to_screen(in_vertices[1]))
         else:
             pygame.draw.polygon(self.surface, color.bytes, [self.to_screen(v) for v in in_vertices], 1)
-
+            
+    def axis(self, angle, radius, center ):
+        import math
+        return b2Vec2(center[0] + math.sin(math.radians(angle)) * radius, center[1] + math.cos(math.radians(angle)) * radius)
+        
     def DrawSolidPolygon(self, in_vertices, vertexCount, color):
         if len(in_vertices) == 2:
             pygame.draw.aaline(self.surface, color.bytes, self.to_screen(in_vertices[0]), self.to_screen(in_vertices[1]))
@@ -74,16 +76,12 @@ class DebugDraw():
             pygame.draw.polygon(self.surface, color.bytes, vertices, 1)
 
     def DrawCircleShape(self, shape, transform, color):
-        #position=transform*shape.pos*self.game.PPM
-        #position=(position[0], self.game.HEIGHT-position[1])
-        #pygame.draw.circle(self.surface, color, [int(x) for x in position], int(shape.radius*self.game.PPM))
-        #pygame.draw.circle(self.surface, (0,0,0), [int(x) for x in position], int(shape.radius*self.game.PPM),3)
-        self.DrawSolidCircle(shape.pos, int(shape.radius*self.game.PPM),1, color)
+        self.DrawSolidCircle(b2Vec2(transform*shape.pos), int(shape.radius*self.game.PPM),transform.angle, color.bytes)
 
     def DrawPolygonShape(self, shape, transform, color):
-        vertices=[(transform*v)*self.game.PPM for v in shape.vertices]
-        vertices=[(v[0], self.game.HEIGHT-v[1]) for v in vertices]
-        pygame.draw.polygon(self.surface, color, vertices)
+        vertices=[(transform*v) for v in shape.vertices]
+        vertices = map(self.to_screen,vertices)
+        pygame.draw.polygon(self.surface, color.bytes, vertices)
 
     def DrawShape(self, shape, transform, color):
         if isinstance(shape, b2PolygonShape):
@@ -107,7 +105,7 @@ class DebugDraw():
         xf1, xf2=bodyA.transform, bodyB.transform
         x1, x2=xf1.position, xf2.position
         p1, p2=joint.anchorA, joint.anchorB
-        color=(50, 80, 80, 200)
+        color=b2Color(0.5, 0.8, 0.8)
 
         if isinstance(joint, b2DistanceJoint):
             self.DrawSegment(p1, p2, color)
@@ -127,11 +125,11 @@ class DebugDraw():
     def ManualDraw(self):
 
         colors = {
-            'active'    : (50, 50, 30),
-            'static'    : (50, 90, 50),
-            'kinematic' : (50, 50, 90),
-            'asleep'    : (60, 60, 60),
-            'default'   : (90, 70, 70),
+            'active'    : b2Color(0.5, 0.5, 0.4),
+            'static'    : b2Color(0.5, 0.9, 0.5),
+            'kinematic' : b2Color(0.5, 0.5, 0.9),
+            'asleep'    : b2Color(0.6, 0.6, 0.6),
+            'default'   : b2Color(0.9, 0.7, 0.7),
         }
 
         for body in self.game.world.bodies:
@@ -150,7 +148,8 @@ class DebugDraw():
         for joint in self.game.world.joints:
             self.DrawJoint(joint)
 
-        color=(90, 30, 90, 200)
+        color=b2Color(0.9, 0.3, 0.9)
+
         for body in self.game.world.bodies:
             if not body.active:
                 continue
