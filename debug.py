@@ -50,7 +50,7 @@ class DebugDraw():
     def DrawSolidCircle(self, center_v, radius, angle, color):
         if radius < 1: radius = 1
         else: radius = int(radius)
-        
+
         center = self.to_screen(center_v)
         pygame.draw.circle(self.surface, color, center, radius, 0)
         pygame.draw.circle(self.surface, color, center, radius, 1)
@@ -62,11 +62,11 @@ class DebugDraw():
             pygame.draw.aaline(self.surface, color.bytes, self.to_screen(in_vertices[0]), self.to_screen(in_vertices[1]))
         else:
             pygame.draw.polygon(self.surface, color.bytes, [self.to_screen(v) for v in in_vertices], 1)
-            
+
     def axis(self, angle, radius, center ):
-        import math
-        return b2Vec2(center[0] + math.sin(math.radians(angle)) * radius, center[1] + math.cos(math.radians(angle)) * radius)
-        
+        from math import cos,sin
+        return b2Vec2(center[0] + sin(angle) * radius, center[1] + cos(angle) * radius)
+
     def DrawSolidPolygon(self, in_vertices, vertexCount, color):
         if len(in_vertices) == 2:
             pygame.draw.aaline(self.surface, color.bytes, self.to_screen(in_vertices[0]), self.to_screen(in_vertices[1]))

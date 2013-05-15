@@ -33,6 +33,9 @@ class Game():
         self.ground_body.CreateFixture( shape = polygonShape(vertices=[(0,1),(-10,5),(-10,1)]))
         self.debuger = Debuger(self)
 
+    def to_screen(self, pt):
+        return (int(pt[0] * self.PPM ),int( self.HEIGHT - pt[1]* self.PPM ))
+
     def event(self):
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
