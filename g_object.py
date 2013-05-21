@@ -1,22 +1,31 @@
-import pygame
-import Box2D
 from Box2D.b2 import *
-
+import Box2D
+import pygame
+from g_surface import G_Surface
 class G_Object():
+    
     @property
     def position( self ):
         return self.body.position
-
+    
     @position.setter
     def position(self, val):
         self.body.position = val
 
-    def __init__(self, game, position = (0,0),angle=0 ):
+    def image_position(self):
+        position = self.game.to_screen(self.position)
+        return ( position[0] - self.surface.origin.get_width()/2, position[1] - self.surface.origin.get_height()/2)
+
+    def transform(self):
+        pass
+
+    def __init__(self, game, position = (0,0), angle=0 ):
         self.game = game
         self.body = self.game.world.CreateDynamicBody(position = position, angle=angle)
+        self.surface = G_Surface()
 
     def draw(self):
-        pass
-
+        self.game.screen.blit( self.surface.current , self.image_position() )
+        
     def update(self):
-        pass
+        self.surface.transform( self.body.angle, 0 )

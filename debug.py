@@ -12,10 +12,6 @@ class DebugDraw():
         self.Offset = (0,0)
         self.width, self.height = game.WIDTH, game.HEIGHT
 
-    def StartDraw(self): pass
-
-    def EndDraw(self): pass
-
     def DrawPoint(self, p, size, color):
         self.DrawCircle(p, size, color, drawwidth=0)
 

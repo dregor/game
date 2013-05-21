@@ -1,12 +1,18 @@
 import pygame,sys
 from pygame.locals import *
 from bactery import Bactery
+from maw import Maw
 from debug import Debuger
 
 from Box2D.b2 import world,polygonShape
+import Box2D
 
 class Game():
     GAME_NAME = 'Game'
+    
+    @property
+    def centr( self ):
+        return (self.WIDTH/2,self.HEIGHT/2)
 
     WIDTH, HEIGHT=640,480
     PPM  = 20.
@@ -25,17 +31,35 @@ class Game():
         pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
         self.world = world(gravity=(0,-10),doSleep=True)
-        self.g_objects.append( Bactery(self,(10,15)) )
-        self.ground_body = self.world.CreateStaticBody(
-                                                       position=(15,5),
-                                                       shapes = polygonShape(box=(10,1))
-                                                       )
-        self.ground_body.CreateFixture( shape = polygonShape(vertices=[(0,1),(-10,5),(-10,1)]))
         self.debuger = Debuger(self)
 
+        self.test1()
+        
     def to_screen(self, pt):
         return (int(pt[0] * self.PPM ),int( self.HEIGHT - pt[1]* self.PPM ))
+    
+    def to_world(self, pt):
 
+        return ( pt[0] / self.PPM, 
+                           (self.HEIGHT - pt[1])/self.PPM)
+    
+    def test1(self):
+        self.g_objects.append( Maw(self, position = self.to_world((320,240)), n =8 ) )
+        self.world.CreateStaticBody(
+                shapes=[ Box2D.b2EdgeShape(vertices=[(0,2),(0,1)]),
+                         Box2D.b2EdgeShape(vertices=[(0,1),(30,1)]),
+                         Box2D.b2EdgeShape(vertices=[(30,1),(30,2)])
+                         ],
+                position=(1,0)
+            )
+        self.g_objects.append( Bactery(self, self.to_world((250,140)) ) )
+        self.ground_body = self.world.CreateStaticBody(
+                                                       position=self.to_world((320,440)),
+                                                       shapes = [polygonShape(box=(10,1)),
+                                                                 polygonShape(vertices=[(0,1),(-10,5),(-10,1)])
+                                                                 ]
+                                                       )
+        
     def event(self):
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -70,7 +94,7 @@ class Game():
 
     def draw(self):
         background = pygame.Surface(self.screen.get_size()).convert()
-        background.fill((250, 250, 250))
+        background.fill((200, 105, 105))
         self.screen.blit(background,(0,0))
 
         for item in self.g_objects:
