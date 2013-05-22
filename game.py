@@ -8,13 +8,13 @@ from Box2D.b2 import world,polygonShape
 import Box2D
 
 class Game():
-    GAME_NAME = 'Game'
-    
+    GAME_NAME = 'Polyhedron'
+
     @property
-    def centr( self ):
+    def center( self ):
         return (self.WIDTH/2,self.HEIGHT/2)
 
-    WIDTH, HEIGHT=640,480
+    WIDTH, HEIGHT = 800, 600
     PPM  = 20.
     FPS = 60
     TIME_STEP = 1./FPS
@@ -30,36 +30,50 @@ class Game():
         self.screen = pygame.display.set_mode((self.WIDTH,self.HEIGHT))
         pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
-        self.world = world(gravity=(0,-10),doSleep=True)
+        self.world = world(gravity=(0,-15),doSleep=True)
         self.debuger = Debuger(self)
 
-        self.test1()
-        
+        self.test2()
+
     def to_screen(self, pt):
         return (int(pt[0] * self.PPM ),int( self.HEIGHT - pt[1]* self.PPM ))
-    
-    def to_world(self, pt):
 
-        return ( pt[0] / self.PPM, 
-                           (self.HEIGHT - pt[1])/self.PPM)
-    
-    def test1(self):
-        self.g_objects.append( Maw(self, position = self.to_world((320,240)), n =8 ) )
+    def to_world(self, pt):
+        return ( pt[0] / self.PPM, (self.HEIGHT - pt[1])/self.PPM)
+
+    def test2(self):
+        self.g_objects.append( Maw(self, position = self.to_world( self.center ), n = 18 ))
+        self.g_objects.append( Bactery(self, self.to_world((300,240)) ) )
+        vertex = [  [(10,self.HEIGHT-self.HEIGHT/10),(10,self.HEIGHT-self.HEIGHT/20)],
+                    [(10,self.HEIGHT-self.HEIGHT/20),(self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/20)],
+                    [(self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/20),(self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/10)]
+                 ]
+
+        vertex = [ [ self.to_world(pt) for pt in vert ] for vert in vertex ]
         self.world.CreateStaticBody(
-                shapes=[ Box2D.b2EdgeShape(vertices=[(0,2),(0,1)]),
-                         Box2D.b2EdgeShape(vertices=[(0,1),(30,1)]),
-                         Box2D.b2EdgeShape(vertices=[(30,1),(30,2)])
+                shapes=[ Box2D.b2EdgeShape(vertices=vertex[0]),
+                         Box2D.b2EdgeShape(vertices=vertex[1]),
+                         Box2D.b2EdgeShape(vertices=vertex[2])
                          ],
                 position=(1,0)
             )
-        self.g_objects.append( Bactery(self, self.to_world((250,140)) ) )
+
+    def test1(self):
+        self.world.CreateStaticBody(
+                shapes=[ Box2D.b2EdgeShape(vertices=[(0,2),(0,1)]),
+                         Box2D.b2EdgeShape(vertices=[(0,1),(30,1)]),
+                         Box2D.b2EdgeShape(vertices=[self.toworld((self.width - 10,self.HEIGHT - 10 )),(30,2)])
+                         ],
+                position=(1,0)
+            )
+        self.g_objects.append( Bactery(self, self.to_world((220,140)) ) )
         self.ground_body = self.world.CreateStaticBody(
                                                        position=self.to_world((320,440)),
                                                        shapes = [polygonShape(box=(10,1)),
                                                                  polygonShape(vertices=[(0,1),(-10,5),(-10,1)])
                                                                  ]
                                                        )
-        
+
     def event(self):
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -114,9 +128,11 @@ class Game():
 
 game = Game()
 game.start()
-
-while True:
-    game.event()
-    if game.playing == True:
-        game.update()
-    game.draw()
+try:
+    while True:
+        game.event()
+        if game.playing == True:
+            game.update()
+        game.draw()
+except KeyboardInterrupt:
+    print('KeyInt')

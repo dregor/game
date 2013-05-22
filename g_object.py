@@ -3,11 +3,11 @@ import Box2D
 import pygame
 from g_surface import G_Surface
 class G_Object():
-    
+
     @property
     def position( self ):
         return self.body.position
-    
+
     @position.setter
     def position(self, val):
         self.body.position = val
@@ -19,13 +19,20 @@ class G_Object():
     def transform(self):
         pass
 
-    def __init__(self, game, position = (0,0), angle=0 ):
+    def __init__(self, game, position = (0,0), angle=0, dynamic = True):
         self.game = game
-        self.body = self.game.world.CreateDynamicBody(position = position, angle=angle)
+
+        if dynamic:
+            bodyDef = self.game.world.CreateDynamicBody
+        else:
+            bodyDef = self.game.world.CreateStaticbody
+
+        self.body = bodyDef(position = position, angle=angle)
+
         self.surface = G_Surface()
 
     def draw(self):
         self.game.screen.blit( self.surface.current , self.image_position() )
-        
+
     def update(self):
         self.surface.transform( self.body.angle, 0 )
