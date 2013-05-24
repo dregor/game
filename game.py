@@ -66,7 +66,7 @@ class Game():
                          ],
                 position=(1,0)
             )
-        self.g_objects.append( Bactery(self, self.to_world((220,140)) ) )
+        self.g_objects.append( Bactery(self, self.to_world((200,140)) ) )
         self.ground_body = self.world.CreateStaticBody(
                                                        position=self.to_world((320,440)),
                                                        shapes = [polygonShape(box=(10,1)),
@@ -85,6 +85,11 @@ class Game():
                     self.debug = False
                 else:
                     self.debug = True
+
+            if event.type == KEYDOWN and event.key == K_c:
+                    maw = self.g_objects[0]
+                    obj =  self.g_objects[1]
+                    maw.addBody( obj )
 
             if event.type == KEYDOWN and event.key == K_p:
                 if self.playing:
