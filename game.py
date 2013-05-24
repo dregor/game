@@ -97,12 +97,13 @@ class Game():
                 else:
                     self.playing= True
 
-    def text_out(self, color, size, text):
+    def text_out(self, color, size, text, pt):
         if pygame.font:
             font = pygame.font.Font(None, size)
             text = font.render(text, 4, color )
             textpos = text.get_rect()
-            textpos.center = self.screen.get_rect().center
+            textpos.center = pt
+            #textpos.center = self.screen.get_rect().center
             self.screen.blit(text, textpos)
 
     def start(self):
