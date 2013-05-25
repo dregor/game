@@ -46,17 +46,16 @@ class Maw(G_Object):
         return ( (max((x1,x2))-min((x1,x2)))/2+min((x1,x2)), (max((y1,y2))-min((y1,y2)))/2+min((y1,y2)))
 
     def _quarter(self,pt):
-        pt = (pt[0] - self.position[0], pt[1] - self.position[1])
         if( pt[0] > 0):
             if(pt[1]>0):
                 return 1
             else:
                 return 2
         else:
-            if(pt[1]>0):
-                return 3
-            else:
+            if(pt[1] > 0):
                 return 4
+            else:
+                return 3
 
     def _length(self, pt1, pt2):
         from math import modf,sqrt,pow
@@ -64,10 +63,13 @@ class Maw(G_Object):
 
     def _alpha(self, A):
         from math import asin
-        #A = (A[0] - self.position[0], A[1] - self.position[1])
         print('a = '+str(self._length(A,(A[0],0))))
         print('c = '+str(self._length(A,(0,0))))
-        return asin(self._length(A,(A[0],0))/self._length(A,(0,0)))
+        A = (A[0] - self.position[0], A[1] - self.position[1])
+        print(A)
+        print('a = '+str(self._length(A,(A[0],0))))
+        print('c = '+str(self._length(A,(0,0))))
+        return asin(abs(self._length(A,(A[0],0))/self._length(A,(0,0))))
 
     def addBody(self, childBody):
         import random
@@ -87,13 +89,14 @@ class Maw(G_Object):
         elif q == 4:
             angle = pi-self._alpha(pt)
         print('alpha = '+str(degrees(angle)))
-        childBody.body.angle = degrees(angle)
+        childBody.body.angle = alpha
 
     def draw(self):
         import pygame
         pt = self._place(0)
-        pt = self.game.to_screen(( pt[0], pt[1]))
-        pygame.draw.circle(self.game.screen, (150,150,150), pt , 10, 10)
+        pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 10)
+        q = self._quarter((pt[0]-self.body.position[0],pt[1]-self.body.position[1]))
+        self.game.text_out((255,255,255),16,str(q)+str((round(pt[0]-self.body.position[0]),round(pt[1]-self.body.position[1]))),self.game.to_screen(pt))
         for fixture in [self.body.fixtures[0]]:
             i=0
             for point in fixture.shape.vertices:
