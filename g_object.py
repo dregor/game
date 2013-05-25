@@ -19,8 +19,9 @@ class G_Object():
     def transform(self):
         pass
 
-    def __init__(self, game, position = (0,0), angle=0, dynamic = True):
+    def __init__(self, game, position = (0,0), angle=0, dynamic = True, additive=(0,0) ):
         self.game = game
+        self.additive = additive
 
         if dynamic:
             bodyDef = self.game.world.CreateDynamicBody

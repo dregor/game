@@ -38,12 +38,18 @@ class Maw(G_Object):
         for i in range(n):
             yield [ outside[i], outside[i+1], inside[i+1], inside[i] ]
 
-    def _place(self, i = 0):
+    def _place(self, i = 0, ):
         fixture = self.body.fixtures[i]
         x1,y1 = self.body.transform*fixture.shape.vertices[2]
         x2,y2 = self.body.transform*fixture.shape.vertices[3]
         return ( (max((x1,x2))-min((x1,x2)))/2+min((x1,x2)), (max((y1,y2))-min((y1,y2)))/2+min((y1,y2)))
-
+    
+    def _additive(self, alpha, pt, add):
+        from math import sin, cos, pi
+        dx = pt[0] + cos(2*pi-alpha) * add[0] + sin(2*pi-alpha) * add[1]
+        dy = pt[1] + cos(2*pi-alpha) * add[1] - sin(2*pi-alpha) * add[0]   
+        return( dx, dy )
+        
     def _quarter(self,pt):
         pt = (pt[0] - self.position[0], pt[1] - self.position[1])
         if( pt[0] > 0):
@@ -64,33 +70,32 @@ class Maw(G_Object):
     def _alpha(self, A):
         from math import asin
         A = (A[0] - self.position[0], A[1] - self.position[1])
-        return asin(abs(self._length(A,(A[0],0))/self._length(A,(0,0))))
+        return asin(self._length((0,0),(A[0],0))/self._length(A,(0,0)))
 
-    def addBody(self, childBody):
+    def addBody(self, child):
         import random
         from math import pi
         i = random.randint(0,len(self.body.fixtures)-1)
         pt = self._place(i)
-        childBody.body.position = pt
         q = self._quarter(pt)
         if q == 1:
             angle = pi+self._alpha(pt)
         elif q == 2:
             angle = 2*pi-self._alpha(pt)
         elif q == 3:
-            angle = 2*pi+self._alpha(pt)
+            angle = self._alpha(pt)
         elif q == 4:
             angle = pi-self._alpha(pt)
-        childBody.body.angle = angle
-
+            
+        child.body.angle = 2*pi - angle 
+        child.body.position = self._additive( 2*pi-angle,  pt, child.additive )
+        
     def draw(self):
-        '''
-        import pygame
-        pt = self._place(0)
+        '''pt = self._place(0)
         pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 10)
         q = self._quarter(pt)
         self.game.text_out((255,255,255),16,str(q)+str((round(pt[0]),round(pt[1]))),self.game.to_screen(pt))
-        for fixture in [self.body.fixtures[0]]:
+        for fixture in self.body.fixtures:
             i=0
             for point in fixture.shape.vertices:
                 i+=1

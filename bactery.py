@@ -11,6 +11,8 @@ class Bactery(G_Object):
         self.surface.load(random.sample(self.images,1)[0])
         radius = ((self.surface.origin.get_size()[0]+self.surface.origin.get_size()[1])/4)/game.PPM
         self.body.CreateCircleFixture(radius = radius, density=10, friction=5.3)
+        #self.body.CreateFixture(shape = Box2D.b2PolygonShape(vertices=[(0,3),(-1,-1),(1,-1)]), density = 10, friction = 1)
+        self.additive = (0,radius)
 
 
     def draw(self):
