@@ -36,16 +36,16 @@ class Maw(G_Object):
         inside = self._polyhedron( r, n )
         inside.append(inside[0])
         for i in range(n):
-            yield [ outside[i], outside[i+1], inside[i], inside[i+1] ]
+            yield [ outside[i], outside[i+1], inside[i+1], inside[i] ]
 
     def _place(self, i = 0):
-        from math import cos,sin,pi
         fixture = self.body.fixtures[i]
-        x1,y1 = self.body.transform*fixture.shape.vertices[0]
+        x1,y1 = self.body.transform*fixture.shape.vertices[2]
         x2,y2 = self.body.transform*fixture.shape.vertices[3]
         return ( (max((x1,x2))-min((x1,x2)))/2+min((x1,x2)), (max((y1,y2))-min((y1,y2)))/2+min((y1,y2)))
 
     def _quarter(self,pt):
+        pt = (pt[0] - self.position[0], pt[1] - self.position[1])
         if( pt[0] > 0):
             if(pt[1]>0):
                 return 1
@@ -58,28 +58,21 @@ class Maw(G_Object):
                 return 3
 
     def _length(self, pt1, pt2):
-        from math import modf,sqrt,pow
+        from math import sqrt,pow
         return sqrt(pow(pt2[0]-pt1[0],2)+pow(pt2[1]-pt1[1],2))
 
     def _alpha(self, A):
         from math import asin
-        print('a = '+str(self._length(A,(A[0],0))))
-        print('c = '+str(self._length(A,(0,0))))
         A = (A[0] - self.position[0], A[1] - self.position[1])
-        print(A)
-        print('a = '+str(self._length(A,(A[0],0))))
-        print('c = '+str(self._length(A,(0,0))))
         return asin(abs(self._length(A,(A[0],0))/self._length(A,(0,0))))
 
     def addBody(self, childBody):
         import random
-        from math import pi,degrees
-        #i = random.randint(0,len(self.body.fixtures)-1)
-        i = 0
+        from math import pi
+        i = random.randint(0,len(self.body.fixtures)-1)
         pt = self._place(i)
         childBody.body.position = pt
         q = self._quarter(pt)
-        print('A = '+str(pt))
         if q == 1:
             angle = pi+self._alpha(pt)
         elif q == 2:
@@ -88,15 +81,15 @@ class Maw(G_Object):
             angle = 2*pi+self._alpha(pt)
         elif q == 4:
             angle = pi-self._alpha(pt)
-        print('alpha = '+str(degrees(angle)))
-        childBody.body.angle = alpha
+        childBody.body.angle = angle
 
     def draw(self):
+        '''
         import pygame
         pt = self._place(0)
         pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 10)
-        q = self._quarter((pt[0]-self.body.position[0],pt[1]-self.body.position[1]))
-        self.game.text_out((255,255,255),16,str(q)+str((round(pt[0]-self.body.position[0]),round(pt[1]-self.body.position[1]))),self.game.to_screen(pt))
+        q = self._quarter(pt)
+        self.game.text_out((255,255,255),16,str(q)+str((round(pt[0]),round(pt[1]))),self.game.to_screen(pt))
         for fixture in [self.body.fixtures[0]]:
             i=0
             for point in fixture.shape.vertices:
@@ -105,6 +98,7 @@ class Maw(G_Object):
                 pt = (int(pt[0]),int(pt[1]))
                 pygame.draw.circle(self.game.screen, (10,40*i,10), self.game.to_screen(pt) , 6, 6)
                 self.game.text_out((255,255,255),16,str(i)+':'+str(pt),self.game.to_screen(pt))
+        '''
         G_Object.draw(self)
 
 
