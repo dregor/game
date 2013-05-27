@@ -92,6 +92,11 @@ class Game():
                     obj =  self.g_objects[1]
                     maw.addBody( obj )
 
+            if event.type == KEYDOWN and event.key == K_k:
+                    maw = self.g_objects[0]
+                    obj =  self.g_objects[1]
+                    maw.addBody( obj,False )
+
             if event.type == KEYDOWN and event.key == K_p:
                 if self.playing:
                     self.playing = False

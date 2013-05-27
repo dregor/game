@@ -10,7 +10,10 @@ class Maw(G_Object):
     outside = []
     radius = 0
     n = 0
-    
+    speed = 300000
+    MOVE_LEFT = False
+    MOVE_RIGHT = False
+
     def __init__(self, game, position = (0,0), angle=0, radius = 10, n = 3 ):
         G_Object.__init__(self, game, position, angle)
         self.center_box = self.game.world.CreateStaticBody(
@@ -55,10 +58,13 @@ class Maw(G_Object):
             self.outside.append((outside[i],outside[i+1]))
             yield [ outside[i], outside[i+1], inside[i+1], inside[i] ]
 
-    def _place(self, i = 0 ):
+    def _place(self, i = 0, inside = True):
         #fixture = self.body.fixtures[i]
         #ver = self._near( fixture.shape.vertices )
-        pts = self.inside[i]
+        if inside:
+            pts = self.inside[i]
+        else:
+            pts = self.outside[i]
         x1,y1 = self.body.transform*pts[0]
         x2,y2 = self.body.transform*pts[1]
         return ( (max((x1,x2))-min((x1,x2)))/2+min((x1,x2)), (max((y1,y2))-min((y1,y2)))/2+min((y1,y2)))
@@ -68,7 +74,7 @@ class Maw(G_Object):
         dx = pt[0] + cos(2*pi-alpha) * add[0] + sin(2*pi-alpha) * add[1]
         dy = pt[1] + cos(2*pi-alpha) * add[1] - sin(2*pi-alpha) * add[0]
         return( dx, dy )
-
+    '''
     def _near( self, pt_array ):
         length = {}
         for pt in pt_array:
@@ -76,7 +82,7 @@ class Maw(G_Object):
             length.update( { float("%.10f"%self._length(ptf, self.position)):ptf } )
         sor = sorted(length)
         return (length[sor[0]],length[sor[1]])
-
+    '''
     def _quarter(self,pt):
         pt = (pt[0] - self.position[0], pt[1] - self.position[1])
         if( pt[0] > 0):
@@ -100,11 +106,11 @@ class Maw(G_Object):
         A = (A[0] - self.position[0], A[1] - self.position[1])
         return asin(self._length((0,0),(A[0],0))/self._length(A,(0,0)))
 
-    def addBody(self, child):
+    def addBody(self, child, inside = True):
         import random
         from math import pi
         i = random.randint(0,len(self.body.fixtures)-1)
-        pt = self._place(i)
+        pt = self._place(i,inside)
         q = self._quarter(pt)
         if q == 1:
             angle = pi+self._alpha(pt)
@@ -115,25 +121,50 @@ class Maw(G_Object):
         elif q == 4:
             angle = pi-self._alpha(pt)
 
-        child.body.angle = 2*pi - angle
-        child.body.position = self._additive( 2*pi-angle,  pt, child.additive )
+        if inside:
+            additive = child.additive
+            child.body.angle = 2*pi - angle
+        else:
+            child.body.angle = pi - angle
+            additive = tuple(map(lambda(x):x*-1,child.additive))
+
+        child.body.position = self._additive( 2*pi-angle,  pt, additive )
 
     def event(self, event):
-            if event.type == KEYDOWN and event.key == K_PAGEUP:
+        if event.type == KEYDOWN:
+            key = pygame.key.get_pressed()
+            if key[K_PAGEUP]:
                 self.recreate( self.radius + 0.5, self.n + 1 )
 
-            if event.type == KEYDOWN and event.key == K_PAGEDOWN:
+            if key[K_PAGEDOWN]:
                 self.recreate( self.radius - 0.5, self.n - 1 )
 
-            if event.type == KEYDOWN and event.key == K_LEFT:
-                self.body.ApplyTorque(-100000 * self.radius)
+            if key[K_LEFT]:
+                self.MOVE_LEFT = True
 
-            if event.type == KEYDOWN and event.key == K_RIGHT:
-                self.body.ApplyTorque(100000 * self.radius)
+            if key[K_RIGHT]:
+                self.MOVE_RIGHT = True
+
+        if event.type == KEYUP:
+            if event.key == K_LEFT:
+                self.MOVE_LEFT = False
+
+            if event.key == K_RIGHT:
+                self.MOVE_RIGHT = False
+
+    def move(self,direction = 1):
+        import platform
+        if "Windows" in platform.system():
+            self.body.ApplyTorque(self.speed * direction * self.radius)
+        else:
+            self.body.ApplyTorque(self.speed * direction * self.radius,wake=True)
+
 
     def draw(self):
         for i in range(len(self.body.fixtures)):
             pt = self._place(i)
+            pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 1)
+            pt = self._place(i,False)
             pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 1)
         '''
             q = self._quarter(pt)
@@ -149,7 +180,10 @@ class Maw(G_Object):
         '''
         G_Object.draw(self)
 
-
     def update(self):
+        if self.MOVE_LEFT:
+            self.move(-1)
+        if self.MOVE_RIGHT:
+            self.move()
         G_Object.update(self)
 
