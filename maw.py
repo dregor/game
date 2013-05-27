@@ -1,27 +1,38 @@
 import pygame
+from pygame.locals import *
 import Box2D
 from g_object import G_Object
 
 class Maw(G_Object):
     inside_obj = []
     outside_obj = []
+    radius = 0
+    n = 0
 
     def __init__(self, game, position = (0,0), angle=0, radius = 10, n = 3 ):
         G_Object.__init__(self, game, position, angle)
+        self.center_box = self.game.world.CreateStaticBody(
+                                                    position=position,
+                                                    shapes = Box2D.b2PolygonShape(box=(0.1,0.1))
+                                                )
+
+        joint = self.game.world.CreateRevoluteJoint(bodyA=self.body,bodyB=self.center_box,anchor = position )
+        self.recreate(radius, n)
+
+    def recreate(self, radius, n):
+        self.radius = radius
+        if n < 3: n = 3
+        self.n = n
+        for f in self.body.fixtures:
+            self.body.DestroyFixture(f)
         for vertices in self._polyhedron_full( r = radius, n = n ):
             fixture=Box2D.b2FixtureDef(
                     shape=Box2D.b2PolygonShape(vertices=vertices),
-                    density=1,
+                    density=5,
                     friction=0.6,
                     )
             self.body.CreateFixture(fixture)
-        self.center = self.game.world.CreateStaticBody(
-                                                    position=position,
-                                                    shapes = Box2D.b2PolygonShape(box=(1,1))
-                                                )
-
-        joint = self.game.world.CreateRevoluteJoint(bodyA=self.body,bodyB=self.center,anchor = self.body.worldCenter )
-
+        #self.body.SetMassFromShapes()
 
     def _polyhedron(self, r , n ):
         from math import cos, sin, pi
@@ -40,16 +51,26 @@ class Maw(G_Object):
 
     def _place(self, i = 0, ):
         fixture = self.body.fixtures[i]
-        x1,y1 = self.body.transform*fixture.shape.vertices[2]
-        x2,y2 = self.body.transform*fixture.shape.vertices[3]
+        ver = self._near( fixture.shape.vertices )
+        x1,y1 = self.body.transform*ver[0]
+        x2,y2 = self.body.transform*ver[1]
         return ( (max((x1,x2))-min((x1,x2)))/2+min((x1,x2)), (max((y1,y2))-min((y1,y2)))/2+min((y1,y2)))
-    
+
     def _additive(self, alpha, pt, add):
         from math import sin, cos, pi
         dx = pt[0] + cos(2*pi-alpha) * add[0] + sin(2*pi-alpha) * add[1]
-        dy = pt[1] + cos(2*pi-alpha) * add[1] - sin(2*pi-alpha) * add[0]   
+        dy = pt[1] + cos(2*pi-alpha) * add[1] - sin(2*pi-alpha) * add[0]
         return( dx, dy )
-        
+
+    def _near( self, pt_array ):
+        length = {}
+        for pt in pt_array:
+            ptf = (float("%.10f"%pt[0]),float("%.10f"%pt[1]))
+            length.update( { float("%.10f"%self._length(ptf, self.position)):ptf } )
+        sor = sorted(length)
+        print(length)
+        return (length[sor[0]],length[sor[1]])
+
     def _quarter(self,pt):
         pt = (pt[0] - self.position[0], pt[1] - self.position[1])
         if( pt[0] > 0):
@@ -65,7 +86,8 @@ class Maw(G_Object):
 
     def _length(self, pt1, pt2):
         from math import sqrt,pow
-        return sqrt(pow(pt2[0]-pt1[0],2)+pow(pt2[1]-pt1[1],2))
+        return  sqrt(pow(pt2[0]-pt1[0],2)+pow(pt2[1]-pt1[1],2))
+
 
     def _alpha(self, A):
         from math import asin
@@ -86,15 +108,30 @@ class Maw(G_Object):
             angle = self._alpha(pt)
         elif q == 4:
             angle = pi-self._alpha(pt)
-            
-        child.body.angle = 2*pi - angle 
+
+        child.body.angle = 2*pi - angle
         child.body.position = self._additive( 2*pi-angle,  pt, child.additive )
-        
+
+    def event(self, event):
+            if event.type == KEYDOWN and event.key == K_PAGEUP:
+                self.recreate( self.radius + 0.5, self.n + 1 )
+
+            if event.type == KEYDOWN and event.key == K_PAGEDOWN:
+                self.recreate( self.radius - 0.5, self.n - 1 )
+
+            if event.type == KEYDOWN and event.key == K_LEFT:
+                self.body.ApplyTorque(-100000 * self.radius,wake=True)
+
+            if event.type == KEYDOWN and event.key == K_RIGHT:
+                self.body.ApplyTorque(100000 * self.radius,wake=True)
+
     def draw(self):
-        '''pt = self._place(0)
-        pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 10)
-        q = self._quarter(pt)
-        self.game.text_out((255,255,255),16,str(q)+str((round(pt[0]),round(pt[1]))),self.game.to_screen(pt))
+        for i in range(len(self.body.fixtures)):
+            pt = self._place(i)
+            pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 1)
+        '''
+            q = self._quarter(pt)
+            self.game.debuger.text_out((255,255,255),16,str(q)+str((round(pt[0]),round(pt[1]))),self.game.to_screen(pt))
         for fixture in self.body.fixtures:
             i=0
             for point in fixture.shape.vertices:
@@ -102,7 +139,7 @@ class Maw(G_Object):
                 pt = self.body.transform*point
                 pt = (int(pt[0]),int(pt[1]))
                 pygame.draw.circle(self.game.screen, (10,40*i,10), self.game.to_screen(pt) , 6, 6)
-                self.game.text_out((255,255,255),16,str(i)+':'+str(pt),self.game.to_screen(pt))
+                self.game.debuger.text_out((255,255,255),16,str(i)+':'+str(pt),self.game.to_screen(pt))
         '''
         G_Object.draw(self)
 

@@ -1,10 +1,9 @@
 import pygame,sys
 from pygame.locals import *
+from camera import Camera
 from bactery import Bactery
 from maw import Maw
 from debug import Debuger
-
-from Box2D.b2 import world,polygonShape
 import Box2D
 
 class Game():
@@ -12,7 +11,7 @@ class Game():
 
     @property
     def center( self ):
-        return (self.WIDTH/2,self.HEIGHT/2)
+        return self.screen.get_rect().center
 
     WIDTH, HEIGHT = 800, 600
     PPM  = 20.
@@ -30,49 +29,51 @@ class Game():
         self.screen = pygame.display.set_mode((self.WIDTH,self.HEIGHT))
         pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
-        self.world = world(gravity=(0,-15),doSleep=True)
+        self.camera = Camera(self,offset = (self.center[0]*-1,self.center[1]*-1))
+        aabb = Box2D.b2AABB()
+        aabb.lowerBound = (-100,-100)
+        aabb.upperBound = (100,100)
+        self.world = Box2D.b2World(worldAABB = aabb, gravity=(0,-25), doSleep=True)
         self.debuger = Debuger(self)
-
+        #self.beneath()
         self.test2()
 
     def to_screen(self, pt):
-        return (int(pt[0] * self.PPM ),int( self.HEIGHT - pt[1]* self.PPM ))
+        return (int((pt[0] * self.PPM * self.camera.zoom) - self.camera.offset[0]),
+                int( self.HEIGHT - ((pt[1]* self.PPM * self.camera.zoom) - self.camera.offset[1])))
 
     def to_world(self, pt):
-        return ( pt[0] / self.PPM, (self.HEIGHT - pt[1])/self.PPM)
+        return ( ((pt[0] + self.camera.offset[0]) / self.camera.zoom) / self.PPM,
+                 ((self.HEIGHT - pt[1] + self.camera.offset[1])/self.camera.zoom)/self.PPM)
 
     def test2(self):
-        self.g_objects.append( Maw(self, position = self.to_world( self.center ), n = 18 ))
-        self.g_objects.append( Bactery(self, self.to_world((300,240)) ) )
-        vertex = [  [(10,self.HEIGHT-self.HEIGHT/10),(10,self.HEIGHT-self.HEIGHT/20)],
-                    [(10,self.HEIGHT-self.HEIGHT/20),(self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/20)],
-                    [(self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/20),(self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/10)]
-                 ]
 
+        self.g_objects.append( Maw(self, position = (0,0), radius= 10, n = 6 ))
+        self.g_objects.append( Bactery(self,(-0.5,0)))
+
+    def test1(self):
+        self.g_objects.append( Bactery(self, self.to_world((200,140)) ) )
+        self.ground_body = self.world.CreateStaticBody(
+                                                       position=self.to_world((320,440)),
+                                                       shapes = [Box2D.b2PolygonShape(box=(10,1)),
+                                                                 Box2D.b2PolygonShape(vertices=[(0,1),(-10,5),(-10,1)])
+                                                                 ]
+                                                       )
+    def beneath(self):
+        vertex = [ [(10,self.HEIGHT-self.HEIGHT/10),
+                    (10,self.HEIGHT-self.HEIGHT/20)],
+                   [(10,self.HEIGHT-self.HEIGHT/20),
+                    (self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/20)],
+                   [(self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/20),
+                    (self.WIDTH-self.WIDTH/10,self.HEIGHT-self.HEIGHT/10)]
+                 ]
         vertex = [ [ self.to_world(pt) for pt in vert ] for vert in vertex ]
         self.world.CreateStaticBody(
                 shapes=[ Box2D.b2EdgeShape(vertices=vertex[0]),
                          Box2D.b2EdgeShape(vertices=vertex[1]),
                          Box2D.b2EdgeShape(vertices=vertex[2])
                          ],
-                position=(1,0)
-            )
-
-    def test1(self):
-        self.world.CreateStaticBody(
-                shapes=[ Box2D.b2EdgeShape(vertices=[(0,2),(0,1)]),
-                         Box2D.b2EdgeShape(vertices=[(0,1),(30,1)]),
-                         Box2D.b2EdgeShape(vertices=[self.toworld((self.width - 10,self.HEIGHT - 10 )),(30,2)])
-                         ],
-                position=(1,0)
-            )
-        self.g_objects.append( Bactery(self, self.to_world((200,140)) ) )
-        self.ground_body = self.world.CreateStaticBody(
-                                                       position=self.to_world((320,440)),
-                                                       shapes = [polygonShape(box=(10,1)),
-                                                                 polygonShape(vertices=[(0,1),(-10,5),(-10,1)])
-                                                                 ]
-                                                       )
+                position=(1,0))
 
     def event(self):
         for event in pygame.event.get():
@@ -86,7 +87,7 @@ class Game():
                 else:
                     self.debug = True
 
-            if event.type == KEYDOWN and event.key == K_c:
+            if event.type == KEYDOWN and event.key == K_j:
                     maw = self.g_objects[0]
                     obj =  self.g_objects[1]
                     maw.addBody( obj )
@@ -97,14 +98,11 @@ class Game():
                 else:
                     self.playing= True
 
-    def text_out(self, color, size, text, pt):
-        if pygame.font:
-            font = pygame.font.Font(None, size)
-            text = font.render(text, 4, color )
-            textpos = text.get_rect()
-            textpos.center = pt
-            #textpos.center = self.screen.get_rect().center
-            self.screen.blit(text, textpos)
+            self.camera.event(event)
+
+            for obj in self.g_objects:
+                obj.event(event)
+
 
     def start(self):
         self.playing = True
@@ -114,7 +112,7 @@ class Game():
 
     def draw(self):
         background = pygame.Surface(self.screen.get_size()).convert()
-        background.fill((200, 105, 105))
+        background.fill((24, 36, 27))
         self.screen.blit(background,(0,0))
 
         for item in self.g_objects:
@@ -122,6 +120,7 @@ class Game():
 
         if self.debug:
             self.debuger.draw()
+            self.debuger.text_out('zoom :' + str(self.camera.zoom) +' - '+ str(self.camera.zoom_level),(2,44))
 
         pygame.display.flip()
         pygame.display.update()

@@ -13,10 +13,10 @@ class DebugDraw():
         self.width, self.height = game.WIDTH, game.HEIGHT
 
     def DrawPoint(self, p, size, color):
-        self.DrawCircle(p, size, color, drawwidth=0)
+        pygame.draw.circle(self.surface, color, center, 1, 0)
 
     def DrawAABB(self, aabb, color):
-        points = [self.to_screen(p) for p in [
+        points = [self.game.to_screen(p) for p in [
                     (aabb.lowerBound.x, aabb.lowerBound.y ),
                     (aabb.upperBound.x, aabb.lowerBound.y ),
                     (aabb.upperBound.x, aabb.upperBound.y ),
@@ -25,59 +25,39 @@ class DebugDraw():
         pygame.draw.aalines(self.surface, color, True, points)
 
     def DrawSegment(self, p1, p2, color):
-        pygame.draw.aaline(self.surface, color.bytes, self.to_screen(p1), self.to_screen(p2))
+        pygame.draw.aaline(self.surface, color.bytes, self.game.to_screen(p1), self.game.to_screen(p2))
 
     def DrawTransform(self, xf):
         p1 = xf.position
-        p2 = self.to_screen(p1 + 0.4 * xf.R.col1)
-        p3 = self.to_screen(p1 + 0.4 * xf.R.col2)
-        p1 = self.to_screen(p1)
+        p2 = self.game.to_screen(p1 + 0.4 * xf.R.col1)
+        p3 = self.game.to_screen(p1 + 0.4 * xf.R.col2)
+        p1 = self.game.to_screen(p1)
 
         pygame.draw.aaline(self.surface, (255,0,0), p1, p2)
         pygame.draw.aaline(self.surface, (0,255,0), p1, p3)
-
-    def DrawCircle(self, center, radius, color, drawwidth=1):
-        if radius < 1: radius = 1
-        else: radius = int(radius)
-
-        center = self.to_screen(center)
-        pygame.draw.circle(self.surface, color.bytes, center, radius, drawwidth)
 
     def DrawSolidCircle(self, center_v, radius, angle, color):
         if radius < 1: radius = 1
         else: radius = int(radius)
 
-        center = self.to_screen(center_v)
+        center = self.game.to_screen(center_v)
         pygame.draw.circle(self.surface, color, center, radius, 0)
-        pygame.draw.circle(self.surface, color, center, radius, 1)
+        pygame.draw.circle(self.surface, (220,220,220), center, radius+2, 2)
 
-        pygame.draw.aaline( self.surface, (255,0,0), center, self.axis(angle, radius, center) )
-
-    def DrawPolygon(self, in_vertices, vertexCount, color):
-        if len(in_vertices) == 2:
-            pygame.draw.aaline(self.surface, color.bytes, self.to_screen(in_vertices[0]), self.to_screen(in_vertices[1]))
-        else:
-            pygame.draw.polygon(self.surface, color.bytes, [self.to_screen(v) for v in in_vertices], 1)
+        pygame.draw.aaline( self.surface, (100,120,100), center, self.axis(angle, radius, center) )
 
     def axis(self, angle, radius, center ):
         from math import cos,sin
         return b2Vec2(center[0] + sin(angle) * radius, center[1] + cos(angle) * radius)
 
-    def DrawSolidPolygon(self, in_vertices, vertexCount, color):
-        if len(in_vertices) == 2:
-            pygame.draw.aaline(self.surface, color.bytes, self.to_screen(in_vertices[0]), self.to_screen(in_vertices[1]))
-        else:
-            vertices = [self.to_screen(v) for v in in_vertices]
-            pygame.draw.polygon(self.surface, (color/2).bytes+[127], vertices, 0)
-            pygame.draw.polygon(self.surface, color.bytes, vertices, 1)
-
     def DrawCircleShape(self, shape, transform, color):
-        self.DrawSolidCircle(b2Vec2(transform*shape.pos), int(shape.radius*self.game.PPM),transform.angle, color.bytes)
+        self.DrawSolidCircle(b2Vec2(transform*shape.pos), int(shape.radius*self.game.PPM*self.game.camera.zoom),transform.angle, color.bytes)
 
     def DrawPolygonShape(self, shape, transform, color):
         vertices=[(transform*v) for v in shape.vertices]
-        vertices = map(self.to_screen,vertices)
+        vertices = map(self.game.to_screen,vertices)
         pygame.draw.polygon(self.surface, color.bytes, vertices)
+        pygame.draw.polygon(self.surface, (0,0,0), vertices, 1)
 
     def DrawShape(self, shape, transform, color):
         if isinstance(shape, b2PolygonShape):
@@ -121,11 +101,11 @@ class DebugDraw():
     def ManualDraw(self):
 
         colors = {
-            'active'    : b2Color(0.5, 0.5, 0.4),
-            'static'    : b2Color(0.5, 0.9, 0.5),
-            'kinematic' : b2Color(0.5, 0.5, 0.9),
-            'asleep'    : b2Color(0.6, 0.6, 0.6),
-            'default'   : b2Color(0.9, 0.7, 0.7),
+            'active'    : b2Color(0.25, 0.35, 0.25),
+            'static'    : b2Color(0.25, 0.25, 0.35),
+            'kinematic' : b2Color(0.35, 0.25, 0.35),
+            'asleep'    : b2Color(0.55, 0.45, 0.41),
+            'default'   : b2Color(0.63, 0.62, 0.61),
         }
 
         for body in self.game.world.bodies:
@@ -152,25 +132,29 @@ class DebugDraw():
             transform=body.transform
             for fixture in body.fixtures:
                 shape=fixture.shape
-                for childIndex in range(shape.childCount):
-                    self.DrawAABB(shape.getAABB(transform, childIndex), color)
-
-    def to_screen(self, pt):
-        return (int((pt[0] * self.game.PPM * self.Zoom) - self.Offset[0]),int( self.height - ((pt[1]* self.game.PPM * self.Zoom) - self.Offset[1])))
-
+                #for childIndex in range(shape.childCount):
+                #   self.DrawAABB(shape.getAABB(transform, childIndex), color)
 
 class Debuger():
 
     def __init__(self, game):
         self.game = game
-        self.font = pygame.font.SysFont('Arial',12)
         self.DebugDraw = DebugDraw(self.game)
 
+    def text_out(self, text, pt, color = THECOLORS['red'], size = 14 ):
+        if pygame.font:
+            font = self.game.font
+            text = font.render(text, 4, color )
+            #textpos = text.get_rect()
+            #textpos.center = pt
+            self.game.screen.blit(text, pt)
+
     def draw(self):
-        x, y = pygame.mouse.get_pos()
+        pos = pygame.mouse.get_pos()
         self.DebugDraw.ManualDraw()
-        self.game.screen.blit( self.game.font.render('fps : ' + str(self.game.clock.get_fps()), 1, THECOLORS['red']), (0,0) )
-        self.game.screen.blit( self.game.font.render('mouse : ' + str(x) + ',' + str(y), 1, THECOLORS['red']), (0,14) )
+        self.text_out('fps : ' + str(self.game.clock.get_fps()), (2,2) )
+        self.text_out('mouse : ' + str(pos), (2,16) )
+        self.text_out('mouse (world): ' + str(self.game.to_world(pos)), (2,30) )
 
     def update(self):
         pass

@@ -31,6 +31,10 @@ class G_Object():
         self.body = bodyDef(position = position, angle=angle)
 
         self.surface = G_Surface()
+        self.body.angularDamping=.5
+
+    def event(self, event):
+        pass
 
     def draw(self):
         self.game.screen.blit( self.surface.current , self.image_position() )
