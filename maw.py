@@ -6,9 +6,11 @@ from g_object import G_Object
 class Maw(G_Object):
     inside_obj = []
     outside_obj = []
+    inside = []
+    outside = []
     radius = 0
     n = 0
-
+    
     def __init__(self, game, position = (0,0), angle=0, radius = 10, n = 3 ):
         G_Object.__init__(self, game, position, angle)
         self.center_box = self.game.world.CreateStaticBody(
@@ -16,7 +18,7 @@ class Maw(G_Object):
                                                     shapes = Box2D.b2PolygonShape(box=(0.1,0.1))
                                                 )
 
-        joint = self.game.world.CreateRevoluteJoint(bodyA=self.body,bodyB=self.center_box,anchor = position )
+        self.game.world.CreateRevoluteJoint(bodyA=self.body,bodyB=self.center_box,anchor = position )
         self.recreate(radius, n)
 
     def recreate(self, radius, n):
@@ -46,14 +48,19 @@ class Maw(G_Object):
         outside.append(outside[0])
         inside = self._polyhedron( r, n )
         inside.append(inside[0])
+        self.inside[:]=[]
+        self.outside[:]=[]
         for i in range(n):
+            self.inside.append((inside[i],inside[i+1]))
+            self.outside.append((outside[i],outside[i+1]))
             yield [ outside[i], outside[i+1], inside[i+1], inside[i] ]
 
-    def _place(self, i = 0, ):
-        fixture = self.body.fixtures[i]
-        ver = self._near( fixture.shape.vertices )
-        x1,y1 = self.body.transform*ver[0]
-        x2,y2 = self.body.transform*ver[1]
+    def _place(self, i = 0 ):
+        #fixture = self.body.fixtures[i]
+        #ver = self._near( fixture.shape.vertices )
+        pts = self.inside[i]
+        x1,y1 = self.body.transform*pts[0]
+        x2,y2 = self.body.transform*pts[1]
         return ( (max((x1,x2))-min((x1,x2)))/2+min((x1,x2)), (max((y1,y2))-min((y1,y2)))/2+min((y1,y2)))
 
     def _additive(self, alpha, pt, add):
@@ -68,7 +75,6 @@ class Maw(G_Object):
             ptf = (float("%.10f"%pt[0]),float("%.10f"%pt[1]))
             length.update( { float("%.10f"%self._length(ptf, self.position)):ptf } )
         sor = sorted(length)
-        print(length)
         return (length[sor[0]],length[sor[1]])
 
     def _quarter(self,pt):
@@ -120,10 +126,10 @@ class Maw(G_Object):
                 self.recreate( self.radius - 0.5, self.n - 1 )
 
             if event.type == KEYDOWN and event.key == K_LEFT:
-                self.body.ApplyTorque(-100000 * self.radius,wake=True)
+                self.body.ApplyTorque(-100000 * self.radius)
 
             if event.type == KEYDOWN and event.key == K_RIGHT:
-                self.body.ApplyTorque(100000 * self.radius,wake=True)
+                self.body.ApplyTorque(100000 * self.radius)
 
     def draw(self):
         for i in range(len(self.body.fixtures)):

@@ -15,10 +15,7 @@ class G_Object():
     def image_position(self):
         position = self.game.to_screen(self.position)
         return ( position[0] - self.surface.origin.get_width()/2, position[1] - self.surface.origin.get_height()/2)
-
-    def transform(self):
-        pass
-
+   
     def __init__(self, game, position = (0,0), angle=0, dynamic = True, additive=(0,0) ):
         self.game = game
         self.additive = additive
@@ -40,4 +37,4 @@ class G_Object():
         self.game.screen.blit( self.surface.current , self.image_position() )
 
     def update(self):
-        self.surface.transform( self.body.angle, 0 )
+        self.surface.transform( self.body.angle, self.game.camera.zoom )
