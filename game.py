@@ -6,6 +6,23 @@ from maw import Maw
 from debug import Debuger
 import Box2D
 
+
+class QueryCallback(Box2D.b2QueryCallback):
+    def __init__(self, p):
+        super(QueryCallback, self).__init__()
+        self.point = p
+        self.fixture = None
+
+    def ReportFixture(self, fixture):
+        body = fixture.body
+        if body.type == Box2D.b2_dynamicBody:
+            inside=fixture.TestPoint(self.point)
+            if inside:
+                self.fixture=fixture
+                return False
+        return True
+
+
 class Game():
     GAME_NAME = 'Polyhedron'
 
@@ -22,6 +39,7 @@ class Game():
 
     playing = False
     debug = True
+    mouseJoint = None
 
     def __init__(self):
         pygame.init()
@@ -45,6 +63,29 @@ class Game():
     def to_world(self, pt):
         return ( ((pt[0] + self.camera.offset[0]) / self.camera.zoom) / self.PPM,
                  ((self.HEIGHT - pt[1] + self.camera.offset[1])/self.camera.zoom)/self.PPM)
+
+
+
+    def MouseDown(self, p):
+        if self.mouseJoint != None:
+            return
+        aabb = Box2D.b2AABB(lowerBound=(p[0] - 0.001,p[1] - 0.001), upperBound=(p[0] + 0.001, p[1] + 0.001))
+        query = QueryCallback(p)
+        self.world.QueryAABB(query, aabb)
+        if query.fixture:
+            body = query.fixture.body
+            self.mouseJoint = self.world.CreateMouseJoint(
+                    bodyA=self.g_objects[0].center_box,
+                    bodyB=body,
+                    target=p,
+                    maxForce=100000.0*body.mass)
+            body.awake = True
+
+    def MouseUp(self):
+        if self.mouseJoint != None:
+            self.world.DestroyJoint(self.mouseJoint)
+            self.mouseJoint = None
+
 
     def test2(self):
 
@@ -77,6 +118,17 @@ class Game():
 
     def event(self):
         for event in pygame.event.get():
+
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.MouseDown( self.to_world(event.pos))
+            if event.type == MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.MouseUp()
+            if event.type == MOUSEMOTION:
+                 if self.mouseJoint != None:
+                    self.mouseJoint.target = self.to_world(event.pos)
+
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
@@ -87,12 +139,12 @@ class Game():
                 else:
                     self.debug = True
 
-            if event.type == KEYDOWN and event.key == K_j:
+            if event.type == KEYDOWN and event.key == K_i:
                     maw = self.g_objects[0]
                     obj =  self.g_objects[1]
                     maw.addBody( obj )
 
-            if event.type == KEYDOWN and event.key == K_k:
+            if event.type == KEYDOWN and event.key == K_o:
                     maw = self.g_objects[0]
                     obj =  self.g_objects[1]
                     maw.addBody( obj,False )
@@ -135,6 +187,7 @@ class Game():
         for item in self.g_objects:
             item.update()
         self.clock.tick(self.FPS)
+        self.camera.update()
 
 game = Game()
 game.start()

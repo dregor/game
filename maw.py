@@ -10,7 +10,7 @@ class Maw(G_Object):
     outside = []
     radius = 0
     n = 0
-    speed = 300000
+    speed = 100000
     MOVE_LEFT = False
     MOVE_RIGHT = False
 

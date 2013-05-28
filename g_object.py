@@ -15,7 +15,7 @@ class G_Object():
     def image_position(self):
         position = self.game.to_screen(self.position)
         return ( position[0] - self.surface.origin.get_width()/2, position[1] - self.surface.origin.get_height()/2)
-   
+
     def __init__(self, game, position = (0,0), angle=0, dynamic = True, additive=(0,0) ):
         self.game = game
         self.additive = additive
@@ -29,6 +29,7 @@ class G_Object():
 
         self.surface = G_Surface()
         self.body.angularDamping=.5
+        self.body.userData = self
 
     def event(self, event):
         pass

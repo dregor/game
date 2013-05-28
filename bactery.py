@@ -10,7 +10,7 @@ class Bactery(G_Object):
         G_Object.__init__(self, game, position, angle)
         self.surface.load(random.sample(self.images,1)[0])
         radius = ((self.surface.origin.get_size()[0]+self.surface.origin.get_size()[1])/4)/game.PPM
-        self.body.CreateCircleFixture(radius = radius, density=40, friction=1.3)
+        self.body.CreateCircleFixture(radius = radius, density=50, friction=2.3)
         #self.body.CreateFixture(shape = Box2D.b2PolygonShape(vertices=[(0,3),(-1,-1),(1,-1)]), density = 10, friction = 1)
         self.additive = (0,radius)
 
@@ -20,5 +20,3 @@ class Bactery(G_Object):
 
     def update(self):
         G_Object.update(self)
-
-
