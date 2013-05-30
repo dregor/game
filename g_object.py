@@ -12,10 +12,6 @@ class G_Object():
     def position(self, val):
         self.body.position = val
 
-    def image_position(self):
-        position = self.game.to_screen(self.position)
-        return ( position[0] - self.surface.origin.get_width()/2, position[1] - self.surface.origin.get_height()/2)
-
     def __init__(self, game, position = (0,0), angle=0, dynamic = True, additive=(0,0) ):
         self.game = game
         self.additive = additive
@@ -35,7 +31,10 @@ class G_Object():
         pass
 
     def draw(self):
-        self.game.screen.blit( self.surface.current , self.image_position() )
+        center = self.surface.current.get_rect().center
+        pos = self.game.to_screen(self.position)
+        self.game.screen.blit( self.surface.current , (pos[0]-center[0],pos[1]-center[1]))
 
     def update(self):
         self.surface.transform( self.body.angle, self.game.camera.zoom )
+

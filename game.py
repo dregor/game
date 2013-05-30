@@ -5,6 +5,7 @@ from bactery import Bactery
 from maw import Maw
 from debug import Debuger
 import Box2D
+from Box2D.b2 import *
 
 
 class QueryCallback(Box2D.b2QueryCallback):
@@ -39,7 +40,7 @@ class Game():
 
     playing = False
     debug = True
-    mouseJoint = None
+    mouse_joint = None
 
     def __init__(self):
         pygame.init()
@@ -48,10 +49,10 @@ class Game():
         pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
         self.camera = Camera(self,offset = (self.center[0]*-1,self.center[1]*-1))
-        aabb = Box2D.b2AABB()
+        aabb = AABB()
         aabb.lowerBound = (-100,-100)
         aabb.upperBound = (100,100)
-        self.world = Box2D.b2World(worldAABB = aabb, gravity=(0,-25), doSleep=True)
+        self.world = world(worldAABB = aabb, gravity=(0,-25), doSleep=True)
         self.debuger = Debuger(self)
         #self.beneath()
         self.test2()
@@ -64,28 +65,25 @@ class Game():
         return ( ((pt[0] + self.camera.offset[0]) / self.camera.zoom) / self.PPM,
                  ((self.HEIGHT - pt[1] + self.camera.offset[1])/self.camera.zoom)/self.PPM)
 
-
-
-    def MouseDown(self, p):
-        if self.mouseJoint != None:
+    def mouse_down(self, p):
+        if self.mouse_joint != None:
             return
-        aabb = Box2D.b2AABB(lowerBound=(p[0] - 0.001,p[1] - 0.001), upperBound=(p[0] + 0.001, p[1] + 0.001))
+        aabb = AABB(lowerBound=(p[0] - 0.001,p[1] - 0.001), upperBound=(p[0] + 0.001, p[1] + 0.001))
         query = QueryCallback(p)
         self.world.QueryAABB(query, aabb)
         if query.fixture:
             body = query.fixture.body
-            self.mouseJoint = self.world.CreateMouseJoint(
+            self.mouse_joint = self.world.CreateMouseJoint(
                     bodyA=self.g_objects[0].center_box,
                     bodyB=body,
                     target=p,
                     maxForce=100000.0*body.mass)
             body.awake = True
 
-    def MouseUp(self):
-        if self.mouseJoint != None:
-            self.world.DestroyJoint(self.mouseJoint)
-            self.mouseJoint = None
-
+    def mouse_up(self):
+        if self.mouse_joint != None:
+            self.world.DestroyJoint(self.mouse_joint)
+            self.mouse_joint = None
 
     def test2(self):
 
@@ -96,8 +94,8 @@ class Game():
         self.g_objects.append( Bactery(self, self.to_world((200,140)) ) )
         self.ground_body = self.world.CreateStaticBody(
                                                        position=self.to_world((320,440)),
-                                                       shapes = [Box2D.b2PolygonShape(box=(10,1)),
-                                                                 Box2D.b2PolygonShape(vertices=[(0,1),(-10,5),(-10,1)])
+                                                       shapes = [PolygonShape(box=(10,1)),
+                                                                 PolygonShape(vertices=[(0,1),(-10,5),(-10,1)])
                                                                  ]
                                                        )
     def beneath(self):
@@ -110,9 +108,9 @@ class Game():
                  ]
         vertex = [ [ self.to_world(pt) for pt in vert ] for vert in vertex ]
         self.world.CreateStaticBody(
-                shapes=[ Box2D.b2EdgeShape(vertices=vertex[0]),
-                         Box2D.b2EdgeShape(vertices=vertex[1]),
-                         Box2D.b2EdgeShape(vertices=vertex[2])
+                shapes=[ EdgeShape(vertices=vertex[0]),
+                         EdgeShape(vertices=vertex[1]),
+                         EdgeShape(vertices=vertex[2])
                          ],
                 position=(1,0))
 
@@ -121,13 +119,13 @@ class Game():
 
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    self.MouseDown( self.to_world(event.pos))
+                    self.mouse_down( self.to_world(event.pos))
             if event.type == MOUSEBUTTONUP:
                 if event.button == 1:
-                    self.MouseUp()
+                    self.mouse_up()
             if event.type == MOUSEMOTION:
-                 if self.mouseJoint != None:
-                    self.mouseJoint.target = self.to_world(event.pos)
+                 if self.mouse_joint != None:
+                    self.mouse_joint.target = self.to_world(event.pos)
 
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
@@ -178,12 +176,17 @@ class Game():
         if self.debug:
             self.debuger.draw()
             self.debuger.text_out('zoom :' + str(self.camera.zoom) +' - '+ str(self.camera.zoom_level),(2,44))
+        #    Rect of surface
+        #    for obj in self.g_objects:
+        #        rect = obj.surface.current.get_rect(center = obj.position,x = obj.position[0])
+        #        pos = self.to_screen(obj.position)
+        #        pygame.draw.rect( self.screen, (0,0,0), pygame.Rect((pos[0]-rect.width/2,pos[1]-rect.height/2),rect.size), 1)
 
         pygame.display.flip()
         pygame.display.update()
 
     def update(self):
-        self.world.Step(self.TIME_STEP,10,10)
+        self.world.Step(self.TIME_STEP,10,8)
         for item in self.g_objects:
             item.update()
         self.clock.tick(self.FPS)

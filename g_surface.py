@@ -14,16 +14,10 @@ class G_Surface():
     def load(self, image):
         self.origin = pygame.image.load(image).convert_alpha()
 
-
     def _rotozoom(self, image, angle, zoom):
         from math import degrees
         angle = degrees(angle)
         if angle != 0:
-
-            #image.get_rect().width *= zoom
-            #image.get_rect().height *= zoom
-            #image.get_rect().center = ( image.get_rect().center[0] * zoom,image.get_rect().center[1] * zoom)
-            #rot_rect = image.get_rect().copy()
 
             rot_image = pygame.transform.rotozoom(image, angle, zoom)
             rot_rect = rot_image.get_rect().copy()

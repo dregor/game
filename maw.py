@@ -37,7 +37,6 @@ class Maw(G_Object):
                     friction=0.6,
                     )
             self.body.CreateFixture(fixture)
-        #self.body.SetMassFromShapes()
 
     def _polyhedron(self, r , n ):
         from math import cos, sin, pi
@@ -59,8 +58,6 @@ class Maw(G_Object):
             yield [ outside[i], outside[i+1], inside[i+1], inside[i] ]
 
     def _place(self, i = 0, inside = True):
-        #fixture = self.body.fixtures[i]
-        #ver = self._near( fixture.shape.vertices )
         if inside:
             pts = self.inside[i]
         else:
@@ -161,23 +158,12 @@ class Maw(G_Object):
 
 
     def draw(self):
-        for i in range(len(self.body.fixtures)):
-            pt = self._place(i)
-            pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 1)
-            pt = self._place(i,False)
-            pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , 10, 1)
-        '''
-            q = self._quarter(pt)
-            self.game.debuger.text_out((255,255,255),16,str(q)+str((round(pt[0]),round(pt[1]))),self.game.to_screen(pt))
-        for fixture in self.body.fixtures:
-            i=0
-            for point in fixture.shape.vertices:
-                i+=1
-                pt = self.body.transform*point
-                pt = (int(pt[0]),int(pt[1]))
-                pygame.draw.circle(self.game.screen, (10,40*i,10), self.game.to_screen(pt) , 6, 6)
-                self.game.debuger.text_out((255,255,255),16,str(i)+':'+str(pt),self.game.to_screen(pt))
-        '''
+        if self.game.debug:
+            for i in range(len(self.body.fixtures)):
+                pt = self._place(i)
+                pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , int(10*self.game.camera.zoom), 1)
+                pt = self._place(i,False)
+                pygame.draw.circle(self.game.screen, (150,150,150), self.game.to_screen(pt) , int(10*self.game.camera.zoom), 1)
         G_Object.draw(self)
 
     def update(self):
