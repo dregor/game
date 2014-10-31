@@ -1,30 +1,28 @@
-from Box2D.b2 import *
-import Box2D
-import pygame
 from g_surface import G_Surface
-class G_Object():
 
+
+class g_object():
     @property
-    def position( self ):
+    def position(self):
         return self.body.position
 
     @position.setter
     def position(self, val):
         self.body.position = val
 
-    def __init__(self, game, position = (0,0), angle=0, dynamic = True, additive=(0,0) ):
+    def __init__(self, game, position=(0, 0), angle=0, dynamic=True, additive=(0, 0)):
         self.game = game
         self.additive = additive
 
         if dynamic:
-            bodyDef = self.game.world.CreateDynamicBody
+            body_def = self.game.world.CreateDynamicBody
         else:
-            bodyDef = self.game.world.CreateStaticbody
+            body_def = self.game.world.CreateStaticbody
 
-        self.body = bodyDef(position = position, angle=angle)
+        self.body = body_def(position=position, angle=angle)
 
         self.surface = G_Surface()
-        self.body.angularDamping=.5
+        self.body.angularDamping = .5
         self.body.userData = self
 
     def event(self, event):
@@ -33,8 +31,8 @@ class G_Object():
     def draw(self):
         center = self.surface.current.get_rect().center
         pos = self.game.to_screen(self.position)
-        self.game.screen.blit( self.surface.current , (pos[0]-center[0],pos[1]-center[1]))
+        self.game.screen.blit(self.surface.current, (pos[0] - center[0], pos[1] - center[1]))
 
     def update(self):
-        self.surface.transform( self.body.angle, self.game.camera.zoom )
+        self.surface.transform(self.body.angle, self.game.camera.zoom)
 
