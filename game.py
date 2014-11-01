@@ -55,9 +55,10 @@ class Game():
         aabb = AABB()
         aabb.lowerBound = (-100, -100)
         aabb.upperBound = (100, 100)
-        self.world = world(worldAABB=aabb, gravity=(0, -25), doSleep=True)
+        self.world = world(worldAABB=aabb, gravity=(0, 0), doSleep=True)
         self.debuger = debuger(self)
         # self.beneath()
+        self.maw = None
         self.test2()
 
     def to_screen(self, pt):
@@ -89,8 +90,8 @@ class Game():
             self.mouse_joint = None
 
     def test2(self):
-
-        self.g_objects.append(Maw(self, position=(0, 0), radius=10, n=6))
+        self.maw = Maw(self, position=(0, 0), radius=10, n=6)
+        self.g_objects.append(self.maw)
         self.g_objects.append(Bactery(self, (-0.5, 0)))
 
     def test1(self):
@@ -142,14 +143,14 @@ class Game():
                     self.debug = True
 
             if event.type == KEYDOWN and event.key == K_i:
-                maw = self.g_objects[0]
                 obj = self.g_objects[1]
-                maw.addBody(obj)
+                obj.is_inside = True
+                self.maw.add_body(obj)
 
             if event.type == KEYDOWN and event.key == K_o:
-                maw = self.g_objects[0]
                 obj = self.g_objects[1]
-                maw.addBody(obj, False)
+                obj.is_inside = False
+                self.maw.add_body(obj, False)
 
             if event.type == KEYDOWN and event.key == K_p:
                 if self.playing:
@@ -161,7 +162,6 @@ class Game():
 
             for obj in self.g_objects:
                 obj.event(event)
-
 
     def start(self):
         self.playing = True
@@ -191,7 +191,9 @@ class Game():
 
     def update(self):
         self.world.Step(self.TIME_STEP, 10, 8)
+
         for item in self.g_objects:
+            #item.body.ApplyForce( ,item.position)
             item.update()
         self.clock.tick(self.FPS)
         self.camera.update()

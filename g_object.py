@@ -10,9 +10,10 @@ class g_object():
     def position(self, val):
         self.body.position = val
 
-    def __init__(self, game, position=(0, 0), angle=0, dynamic=True, additive=(0, 0)):
+    def __init__(self, game, position=(0, 0), angle=0, dynamic=True, additive=(0, 0), is_inside = True):
         self.game = game
         self.additive = additive
+        self.is_inside = is_inside
 
         if dynamic:
             body_def = self.game.world.CreateDynamicBody

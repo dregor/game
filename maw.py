@@ -42,13 +42,13 @@ class Maw(g_object):
             )
             self.body.CreateFixture(fixture)
 
-    @staticmethod
-    def _polyhedron(r, n):
+    def _polyhedron(self, r, n):
         from math import cos, sin, pi
+
         vertices = []
         for i in range(n, 0, -1):
-            random.seed(n*random.random()*10000)
-            r_new = r + random.random()*4
+            random.seed(n * random.random() * 10000)
+            r_new = r + random.random() * 4
             vertices.append((r_new * sin(2 * i * pi / n), r_new * cos(2 * i * pi / n)))
         return vertices
 
@@ -74,23 +74,12 @@ class Maw(g_object):
         return (
             (max((x1, x2)) - min((x1, x2))) / 2 + min((x1, x2)), (max((y1, y2)) - min((y1, y2))) / 2 + min((y1, y2)))
 
-    @staticmethod
-    def _additive(alpha, pt, add):
+    def _additive(self, alpha, pt, add):
         from math import sin, cos, pi
 
         dx = pt[0] + cos(2 * pi - alpha) * add[0] + sin(2 * pi - alpha) * add[1]
         dy = pt[1] + cos(2 * pi - alpha) * add[1] - sin(2 * pi - alpha) * add[0]
         return dx, dy
-
-    '''
-    def _near( self, pt_array ):
-        length = {}
-        for pt in pt_array:
-            ptf = (float("%.10f"%pt[0]),float("%.10f"%pt[1]))
-            length.update( { float("%.10f"%self._length(ptf, self.position)):ptf } )
-        sor = sorted(length)
-        return (length[sor[0]],length[sor[1]])
-    '''
 
     def _quarter(self, pt):
         pt = (pt[0] - self.position[0], pt[1] - self.position[1])
@@ -105,34 +94,36 @@ class Maw(g_object):
             else:
                 return 3
 
-    @staticmethod
-    def _length(pt1, pt2):
+    def _length(self, pt1, pt2):
         from math import sqrt, pow
-
         return sqrt(pow(pt2[0] - pt1[0], 2) + pow(pt2[1] - pt1[1], 2))
+
+    def _angle_to(self, q, pt):
+        from math import pi
+        if q == 1:
+            return pi + self._alpha(pt)
+        elif q == 2:
+            return 2 * pi - self._alpha(pt)
+        elif q == 3:
+            return self._alpha(pt)
+        elif q == 4:
+            return pi - self._alpha(pt)
 
     def _alpha(self, A):
         from math import asin
+        if A == (0.0, 0.0):
+            return 0
+        else:
+            A = (A[0] - self.position[0], A[1] - self.position[1])
+            return asin(self._length((0, 0), (A[0], 0)) / self._length(A, (0, 0)))
 
-        A = (A[0] - self.position[0], A[1] - self.position[1])
-        return asin(self._length((0, 0), (A[0], 0)) / self._length(A, (0, 0)))
-
-    def addBody(self, child, inside=True):
+    def add_body(self, child, inside=True):
         import random
         from math import pi
 
         i = random.randint(0, len(self.body.fixtures) - 1)
         pt = self._place(i, inside)
-        q = self._quarter(pt)
-        angle = 2 * pi
-        if q == 1:
-            angle = pi + self._alpha(pt)
-        elif q == 2:
-            angle = 2 * pi - self._alpha(pt)
-        elif q == 3:
-            angle = self._alpha(pt)
-        elif q == 4:
-            angle = pi - self._alpha(pt)
+        angle = self._angle_to(self._quarter(pt), pt)
 
         if inside:
             additive = child.additive
@@ -142,6 +133,13 @@ class Maw(g_object):
             additive = tuple(map(lambda (x): x * -1, child.additive))
 
         child.body.position = self._additive(2 * pi - angle, pt, additive)
+
+    def _to_centre(self, pt):
+        from math import pi, cos, degrees
+        c = self._length((0, 0), pt)
+        betha = self._alpha(pt)
+        alpha = pi/2 - betha
+        return c * cos(alpha), c * cos(betha)
 
     def event(self, event):
         if event.type == KEYDOWN:
@@ -189,5 +187,22 @@ class Maw(g_object):
             self.move(-1)
         if self.MOVE_RIGHT:
             self.move()
-        g_object.update(self)
+        for item in self.game.g_objects:
+            if item is not self:
+                q = self._quarter(item.position)
+                if q == 1:
+                    q = (1, 1)
+                elif q == 2:
+                    q = (1, -1)
+                elif q == 3:
+                    q = (-1, -1)
+                elif q == 4:
+                    q = (-1, 1)
 
+                if not item.is_inside:
+                    q = q[0] * -1, q[1] * -1
+
+                force = self._to_centre(item.position)
+                force = force[0] * 5 * q[0], force[1] * 5 * q[1]
+                item.body.ApplyLinearImpulse(force, item.position, wake=True)
+        g_object.update(self)
