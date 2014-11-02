@@ -1,8 +1,7 @@
 import sys
-
 import pygame
 from pygame.locals import *
-from Box2D.b2 import *
+
 import Box2D
 
 from camera import Camera
@@ -66,8 +65,8 @@ class Game():
                 int(self.HEIGHT - ((pt[1] * self.PPM * self.camera.zoom) - self.camera.offset[1])))
 
     def to_world(self, pt):
-        return ( ((pt[0] + self.camera.offset[0]) / self.camera.zoom) / self.PPM,
-                 ((self.HEIGHT - pt[1] + self.camera.offset[1]) / self.camera.zoom) / self.PPM)
+        return (((pt[0] + self.camera.offset[0]) / self.camera.zoom) / self.PPM,
+                ((self.HEIGHT - pt[1] + self.camera.offset[1]) / self.camera.zoom) / self.PPM)
 
     def mouse_down(self, p):
         if self.mouse_joint is not None:
@@ -182,7 +181,7 @@ class Game():
             self.debuger.text_out('zoom :' + str(self.camera.zoom) + ' - ' + str(self.camera.zoom_level), (2, 44))
         # Rect of surface
         # for obj in self.g_objects:
-        #        rect = obj.surface.current.get_rect(center = obj.position,x = obj.position[0])
+        # rect = obj.surface.current.get_rect(center = obj.position,x = obj.position[0])
         #        pos = self.to_screen(obj.position)
         #        pygame.draw.rect( self.screen, (0,0,0), pygame.Rect((pos[0]-rect.width/2,pos[1]-rect.height/2),rect.size), 1)
 
@@ -193,7 +192,7 @@ class Game():
         self.world.Step(self.TIME_STEP, 10, 8)
 
         for item in self.g_objects:
-            #item.body.ApplyForce( ,item.position)
+            # item.body.ApplyForce( ,item.position)
             item.update()
         self.clock.tick(self.FPS)
         self.camera.update()
