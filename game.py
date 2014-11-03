@@ -3,11 +3,13 @@ import pygame
 from pygame.locals import *
 
 import Box2D
+from Box2D.b2 import *
 
 from camera import Camera
 from bactery import Bactery
 from maw import Maw
 from debug import debuger
+from test2 import test2
 
 
 class QueryCallback(Box2D.b2QueryCallback):
@@ -35,7 +37,7 @@ class Game():
 
     WIDTH, HEIGHT = 800, 600
     PPM = 20.
-    FPS = 60
+    FPS = 40
     TIME_STEP = 1. / FPS
 
     g_objects = []
@@ -58,7 +60,7 @@ class Game():
         self.debuger = debuger(self)
         # self.beneath()
         self.maw = None
-        self.test2()
+        test2(self)
 
     def to_screen(self, pt):
         return (int((pt[0] * self.PPM * self.camera.zoom) - self.camera.offset[0]),
@@ -87,36 +89,6 @@ class Game():
         if self.mouse_joint is not None:
             self.world.DestroyJoint(self.mouse_joint)
             self.mouse_joint = None
-
-    def test2(self):
-        self.maw = Maw(self, position=(0, 0), radius=10, n=6)
-        self.g_objects.append(self.maw)
-        self.g_objects.append(Bactery(self, (-0.5, 0)))
-
-    def test1(self):
-        self.g_objects.append(Bactery(self, self.to_world((200, 140))))
-        self.ground_body = self.world.CreateStaticBody(
-            position=self.to_world((320, 440)),
-            shapes=[PolygonShape(box=(10, 1)),
-                    PolygonShape(vertices=[(0, 1), (-10, 5), (-10, 1)])
-            ]
-        )
-
-    def beneath(self):
-        vertex = [[(10, self.HEIGHT - self.HEIGHT / 10),
-                   (10, self.HEIGHT - self.HEIGHT / 20)],
-                  [(10, self.HEIGHT - self.HEIGHT / 20),
-                   (self.WIDTH - self.WIDTH / 10, self.HEIGHT - self.HEIGHT / 20)],
-                  [(self.WIDTH - self.WIDTH / 10, self.HEIGHT - self.HEIGHT / 20),
-                   (self.WIDTH - self.WIDTH / 10, self.HEIGHT - self.HEIGHT / 10)]
-        ]
-        vertex = [[self.to_world(pt) for pt in vert] for vert in vertex]
-        self.world.CreateStaticBody(
-            shapes=[EdgeShape(vertices=vertex[0]),
-                    EdgeShape(vertices=vertex[1]),
-                    EdgeShape(vertices=vertex[2])
-            ],
-            position=(1, 0))
 
     def event(self):
         for event in pygame.event.get():
@@ -170,7 +142,7 @@ class Game():
 
     def draw(self):
         background = pygame.Surface(self.screen.get_size()).convert()
-        background.fill((24, 36, 27))
+        background.fill((143, 243, 240))
         self.screen.blit(background, (0, 0))
 
         for item in self.g_objects:
@@ -179,11 +151,13 @@ class Game():
         if self.debug:
             self.debuger.draw()
             self.debuger.text_out('zoom :' + str(self.camera.zoom) + ' - ' + str(self.camera.zoom_level), (2, 44))
-        # Rect of surface
-        # for obj in self.g_objects:
-        # rect = obj.surface.current.get_rect(center = obj.position,x = obj.position[0])
-        #        pos = self.to_screen(obj.position)
-        #        pygame.draw.rect( self.screen, (0,0,0), pygame.Rect((pos[0]-rect.width/2,pos[1]-rect.height/2),rect.size), 1)
+
+        '''
+        for obj in self.g_objects:
+            rect = obj.surface.current.get_rect(center = obj.position,x = obj.position[0])
+            pos = self.to_screen(obj.position)
+            pygame.draw.rect( self.screen, (0,0,0), pygame.Rect((pos[0]-rect.width/2,pos[1]-rect.height/2),rect.size), 1)
+        '''
 
         pygame.display.flip()
         pygame.display.update()
@@ -192,7 +166,6 @@ class Game():
         self.world.Step(self.TIME_STEP, 10, 8)
 
         for item in self.g_objects:
-            # item.body.ApplyForce( ,item.position)
             item.update()
         self.clock.tick(self.FPS)
         self.camera.update()
