@@ -1,7 +1,7 @@
 from bactery import Bactery
 from maw import Maw
 from math import pi
-from Box2D.b2 import *
+import Box2D as b2
 
 
 def test2(game):
@@ -110,9 +110,9 @@ def beneath(game):
     ]
     vertex = [[game.to_world(pt) for pt in vert] for vert in vertex]
     game.world.CreateStaticBody(
-        shapes=[EdgeShape(vertices=vertex[0]),
-                EdgeShape(vertices=vertex[1]),
-                EdgeShape(vertices=vertex[2])
+        shapes=[b2.b2EdgeShape(vertices=vertex[0]),
+                b2.b2EdgeShape(vertices=vertex[1]),
+                b2.b2EdgeShape(vertices=vertex[2])
         ],
         position=(1, 0))
 
@@ -121,7 +121,7 @@ def test1(game):
     game.g_objects.append(Bactery(game, game.to_world((200, 140))))
     game.ground_body = game.world.CreateStaticBody(
         position=game.to_world((320, 440)),
-        shapes=[PolygonShape(box=(10, 1)),
-                PolygonShape(vertices=[(0, 1), (-10, 5), (-10, 1)])
+        shapes=[b2.b2PolygonShape(box=(10, 1)),
+                b2.b2PolygonShape(vertices=[(0, 1), (-10, 5), (-10, 1)])
         ]
     )

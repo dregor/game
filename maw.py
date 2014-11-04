@@ -23,8 +23,11 @@ class Maw(g_object):
         g_object.__init__(self, game, position, angle)
         self.center_box = self.game.world.CreateStaticBody(
             position=position,
-            shapes=Box2D.b2PolygonShape(box=(0.1, 0.1))
+            shapes=Box2D.b2PolygonShape(box=(0.5, 0.5))
         )
+        for item in self.center_box.fixtures:
+            item.filterData.maskBits = 0x0003
+            item.filterData.categoryBits = 0x0000
 
         self.game.world.CreateRevoluteJoint(bodyA=self.body, bodyB=self.center_box, anchor=position)
         self.recreate(radius, n)

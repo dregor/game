@@ -2,17 +2,14 @@ import sys
 import pygame
 from pygame.locals import *
 
-import Box2D
-from Box2D.b2 import *
+import Box2D as b2
 
 from camera import Camera
-from bactery import Bactery
-from maw import Maw
 from debug import debuger
-from test2 import test2
+from test2 import test2, test1
 
 
-class QueryCallback(Box2D.b2QueryCallback):
+class QueryCallback(b2.b2QueryCallback):
     def __init__(self, p):
         super(QueryCallback, self).__init__()
         self.point = p
@@ -20,7 +17,7 @@ class QueryCallback(Box2D.b2QueryCallback):
 
     def ReportFixture(self, fixture):
         body = fixture.body
-        if body.type == Box2D.b2_dynamicBody:
+        if body.type == b2.b2_dynamicBody:
             inside = fixture.TestPoint(self.point)
             if inside:
                 self.fixture = fixture
@@ -53,10 +50,10 @@ class Game():
         pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
         self.camera = Camera(self, offset=(self.center[0] * -1, self.center[1] * -1))
-        aabb = AABB()
+        aabb = b2.b2AABB()
         aabb.lowerBound = (-100, -100)
         aabb.upperBound = (100, 100)
-        self.world = world(worldAABB=aabb, gravity=(0, 0), doSleep=True)
+        self.world = b2.b2World(worldAABB=aabb, gravity=(0, 0), doSleep=True)
         self.debuger = debuger(self)
         # self.beneath()
         self.maw = None
@@ -73,7 +70,7 @@ class Game():
     def mouse_down(self, p):
         if self.mouse_joint is not None:
             return
-        aabb = AABB(lowerBound=(p[0] - 0.001, p[1] - 0.001), upperBound=(p[0] + 0.001, p[1] + 0.001))
+        aabb = b2.b2AABB(lowerBound=(p[0] - 0.001, p[1] - 0.001), upperBound=(p[0] + 0.001, p[1] + 0.001))
         query = QueryCallback(p)
         self.world.QueryAABB(query, aabb)
         if query.fixture:
@@ -82,7 +79,7 @@ class Game():
                 bodyA=self.g_objects[0].center_box,
                 bodyB=body,
                 target=p,
-                maxForce=100000.0 * body.mass)
+                maxForce=1000.0 * body.mass)
             body.awake = True
 
     def mouse_up(self):
