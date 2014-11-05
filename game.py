@@ -32,7 +32,7 @@ class Game():
     def center(self):
         return self.screen.get_rect().center
 
-    WIDTH, HEIGHT = 800, 600
+    WIDTH, HEIGHT = 1024, 768
     PPM = 20.
     FPS = 40
     TIME_STEP = 1. / FPS
@@ -55,7 +55,8 @@ class Game():
         aabb.upperBound = (100, 100)
         self.world = b2.b2World(worldAABB=aabb, gravity=(0, 0), doSleep=True)
         self.debuger = debuger(self)
-        # self.beneath()
+        self.joint_box = None
+        self.mouse_joint = None
         self.maw = None
         test2(self)
 
@@ -67,38 +68,53 @@ class Game():
         return (((pt[0] + self.camera.offset[0]) / self.camera.zoom) / self.PPM,
                 ((self.HEIGHT - pt[1] + self.camera.offset[1]) / self.camera.zoom) / self.PPM)
 
-    def mouse_down(self, p):
+    def mouse_down(self, pt):
         if self.mouse_joint is not None:
             return
-        aabb = b2.b2AABB(lowerBound=(p[0] - 0.001, p[1] - 0.001), upperBound=(p[0] + 0.001, p[1] + 0.001))
-        query = QueryCallback(p)
+        aabb = b2.b2AABB(lowerBound=(pt[0] - 0.001, pt[1] - 0.001), upperBound=(pt[0] + 0.001, pt[1] + 0.001))
+        query = QueryCallback(pt)
         self.world.QueryAABB(query, aabb)
         if query.fixture:
             body = query.fixture.body
+
+            self.joint_box = self.world.CreateStaticBody(
+                position=pt,
+                shapes=b2.b2PolygonShape(box=(0.3, 0.3)))
+            for item in self.joint_box.fixtures:
+                item.filterData.maskBits = 0x0003
+                item.filterData.categoryBits = 0x0000
+
             self.mouse_joint = self.world.CreateMouseJoint(
-                bodyA=self.g_objects[0].center_box,
+                bodyA=self.joint_box,
                 bodyB=body,
-                target=p,
-                maxForce=1000.0 * body.mass)
+                target=pt,
+                maxForce=1000 * body.mass)
+
             body.awake = True
 
     def mouse_up(self):
         if self.mouse_joint is not None:
             self.world.DestroyJoint(self.mouse_joint)
+            self.world.DestroyBody(self.joint_box)
+            self.joint_box = None
             self.mouse_joint = None
 
     def event(self):
         for event in pygame.event.get():
 
+
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    self.mouse_down(self.to_world(event.pos))
+                    pt = self.to_world(event.pos)
+                    self.mouse_down(pt)
             if event.type == MOUSEBUTTONUP:
                 if event.button == 1:
                     self.mouse_up()
             if event.type == MOUSEMOTION:
+                pt = self.to_world(event.pos)
                 if self.mouse_joint is not None:
-                    self.mouse_joint.target = self.to_world(event.pos)
+                    self.joint_box.position = pt
+                    self.mouse_joint.target = pt
 
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()

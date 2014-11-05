@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 
-import Box2D
+import Box2D as b2
 
 from g_object import g_object
 
@@ -15,7 +15,7 @@ class Maw(g_object):
     outside = []
     radius = 0
     n = 0
-    speed = 100000
+    speed = 200
     MOVE_LEFT = False
     MOVE_RIGHT = False
 
@@ -23,13 +23,15 @@ class Maw(g_object):
         g_object.__init__(self, game, position, angle)
         self.center_box = self.game.world.CreateStaticBody(
             position=position,
-            shapes=Box2D.b2PolygonShape(box=(0.5, 0.5))
+            shapes=b2.b2PolygonShape(box=(0.5, 0.5))
         )
         for item in self.center_box.fixtures:
             item.filterData.maskBits = 0x0003
             item.filterData.categoryBits = 0x0000
 
-        self.game.world.CreateRevoluteJoint(bodyA=self.body, bodyB=self.center_box, anchor=position)
+        self.game.world.CreateRevoluteJoint(bodyA=self.body,
+                                            bodyB=self.center_box,
+                                            anchor=position)
         self.recreate(radius, n)
 
     def recreate(self, radius, n):
@@ -39,10 +41,10 @@ class Maw(g_object):
         for f in self.body.fixtures:
             self.body.DestroyFixture(f)
         for vertices in self._polyhedron_full(r=radius, n=n):
-            fixture = Box2D.b2FixtureDef(
-                shape=Box2D.b2PolygonShape(vertices=vertices),
+            fixture = b2.b2FixtureDef(
+                shape=b2.b2PolygonShape(vertices=vertices),
                 density=5,
-                friction=0.6,
+                friction=3.6,
             )
             self.body.CreateFixture(fixture)
 
@@ -94,20 +96,19 @@ class Maw(g_object):
                 self.recreate(self.radius - 0.5, self.n - 1)
 
             if key[K_LEFT]:
-                self.MOVE_LEFT = True
+                self.MOVE_RIGHT = True
 
             if key[K_RIGHT]:
-                self.MOVE_RIGHT = True
+                self.MOVE_LEFT = True
 
         if event.type == KEYUP:
             if event.key == K_LEFT:
+                self.MOVE_RIGHT = False
+            if event.key == K_RIGHT:
                 self.MOVE_LEFT = False
 
-            if event.key == K_RIGHT:
-                self.MOVE_RIGHT = False
-
     def move(self, direction=1):
-        self.body.ApplyTorque(self.speed * direction * self.radius, wake=True)
+        self.body.ApplyTorque(self.speed * direction * (1 - pow(2, self.radius / 1.8)), wake=True)
         """
         import platform
         if "windows" in platform.system():

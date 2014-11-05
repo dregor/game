@@ -8,8 +8,8 @@ def test2(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)
     game.g_objects.append(game.maw)
     game.bactery1 = Bactery(game, (0, 5), name='b1')
-    game.bactery2 = Bactery(game, (0, -5), name='b2')
-    game.bactery3 = Bactery(game, (5, 0), name='b3')
+    game.bactery2 = Bactery(game, (0, 0), name='b2')
+    game.bactery3 = Bactery(game, (0, -5), name='b3', is_you=True)
     game.bactery4 = Bactery(game, (-5, 0), name='b4')
 
     for item in game.maw.body.fixtures:
@@ -25,6 +25,20 @@ def test2(game):
     game.bactery2.body.fixtures[0].filterData.categoryBits = 0x0002
     game.bactery3.body.fixtures[0].filterData.categoryBits = 0x0004
     game.bactery4.body.fixtures[0].filterData.categoryBits = 0x0004
+
+    center_box = game.world.CreateDynamicBody(position=game.bactery3.position,
+                                              shapes=b2.b2PolygonShape(box=(0.5, 0.5)))
+    for item in center_box.fixtures:
+        item.filterData.maskBits = 0x0003
+        item.filterData.categoryBits = 0x0000
+
+    j1 = game.world.CreatePrismaticJoint(bodyA=game.maw.center_box,
+                                         bodyB=center_box,
+                                         referenceAngle=3 * pi / 2,
+                                         axis=(0, 1))
+
+    game.world.CreateRevoluteJoint(bodyA=center_box,
+                                   bodyB=game.bactery3.body)
 
     joint_name = 'wheel'
 
