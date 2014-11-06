@@ -4,12 +4,13 @@ from pygame.locals import *
 from g_object import g_object
 import Box2D as b2
 
+
 class Bactery(g_object):
     images = ['images/ameb.gif', 'images/bakt.gif', 'images/microb.gif']
     MOVE_LEFT = False
     MOVE_RIGHT = False
 
-    def __init__(self, game, position=(0, 0), angle=0, name='', speed=150, is_inside=True, is_you=False,
+    def __init__(self, game, position=(0, 0), angle=0, name='', speed=300, is_inside=True, is_you=False,
                  angle_vector=(0, 1)):
         g_object.__init__(self, game, position, angle, is_inside=is_inside)
         self.speed = speed
@@ -19,7 +20,7 @@ class Bactery(g_object):
         self.name = name
         self.radius = ((size[0] + size[1]) / 4) / game.PPM
         self.body.CreateCircleFixture(radius=self.radius,
-                                      density=60,
+                                      density=35,
                                       friction=1.8)
 
         self.additive = (0, self.radius)
