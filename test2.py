@@ -1,4 +1,5 @@
 from bactery import Bactery
+from legless import LegLess
 from maw import Maw
 from math import pi
 import Box2D as b2
@@ -8,18 +9,24 @@ def test3(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)
     game.g_objects.append(game.maw)
 
-
 def test2(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)
     game.g_objects.append(game.maw)
+
     game.bactery1 = Bactery(game, (0, 5), name='b1')
-    game.bactery2 = Bactery(game, (0, 0), name='b2')
-    game.bactery3 = Bactery(game, (0, -5), name='b3', is_you=True)
+    game.maw.add_body(game.bactery1, is_inside=False)
+    game.bactery2 = Bactery(game, (5, 0), name='b2')
+    game.bactery3 = Bactery(game, (0, -20), name='b3', is_you=True, is_inside=False)
     game.bactery4 = Bactery(game, (-5, 0), name='b4')
 
-    for item in game.maw.body.fixtures:
-        item.filterData.maskBits = 0xffff
-        item.filterData.categoryBits = 0x0001
+    game.triangle = LegLess(game, (0, 0), name='leg0')
+
+    game.maw.add_body(game.triangle, is_inside=True)
+    game.g_objects.append(game.triangle)
+    game.g_objects.append(game.bactery1)
+    game.g_objects.append(game.bactery2)
+    game.g_objects.append(game.bactery3)
+    game.g_objects.append(game.bactery4)
 
     game.bactery1.body.fixtures[0].filterData.maskBits = 0x0001 + 0x0002
     game.bactery2.body.fixtures[0].filterData.maskBits = 0x0001 + 0x0002
@@ -31,21 +38,7 @@ def test2(game):
     game.bactery3.body.fixtures[0].filterData.categoryBits = 0x0004
     game.bactery4.body.fixtures[0].filterData.categoryBits = 0x0004
 
-    center_box = game.world.CreateDynamicBody(position=game.bactery3.position,
-                                              shapes=b2.b2PolygonShape(box=(0.5, 0.5)))
-    for item in center_box.fixtures:
-        item.filterData.maskBits = 0x0003
-        item.filterData.categoryBits = 0x0000
-
-    j1 = game.world.CreatePrismaticJoint(bodyA=game.maw.center_box,
-                                         bodyB=center_box,
-                                         referenceAngle=3 * pi / 2,
-                                         axis=(0, 1))
-
-    game.world.CreateRevoluteJoint(bodyA=center_box,
-                                   bodyB=game.bactery3.body)
-
-    joint_name = 'wheel'
+    joint_name = 'None'
 
     if joint_name == 'distance':
         game.world.CreateDistanceJoint(bodyA=game.bactery1.body,
@@ -113,11 +106,6 @@ def test2(game):
     elif joint_name == 'gear':
         pass
 
-    game.g_objects.append(game.bactery1)
-    game.g_objects.append(game.bactery2)
-    game.g_objects.append(game.bactery3)
-    game.g_objects.append(game.bactery4)
-
 
 def beneath(game):
     vertex = [[(10, game.HEIGHT - game.HEIGHT / 10),
@@ -131,8 +119,7 @@ def beneath(game):
     game.world.CreateStaticBody(
         shapes=[b2.b2EdgeShape(vertices=vertex[0]),
                 b2.b2EdgeShape(vertices=vertex[1]),
-                b2.b2EdgeShape(vertices=vertex[2])
-        ],
+                b2.b2EdgeShape(vertices=vertex[2])],
         position=(1, 0))
 
 
@@ -141,6 +128,4 @@ def test1(game):
     game.ground_body = game.world.CreateStaticBody(
         position=game.to_world((320, 440)),
         shapes=[b2.b2PolygonShape(box=(10, 1)),
-                b2.b2PolygonShape(vertices=[(0, 1), (-10, 5), (-10, 1)])
-        ]
-    )
+                b2.b2PolygonShape(vertices=[(0, 1), (-10, 5), (-10, 1)])])
