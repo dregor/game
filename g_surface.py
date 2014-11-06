@@ -1,8 +1,7 @@
 import pygame
 from copy import copy
 
-
-class g_surface():
+class G_Surface():
     def __init__(self, image=None):
         if image is None:
             self.origin = pygame.Surface((0, 0))
@@ -10,7 +9,7 @@ class g_surface():
         else:
             self.load(image)
 
-        self.current = copy(self.origin)
+        self.current = copy(self.origin.copy())
 
     def load(self, image):
         self.origin = pygame.image.load(image).convert_alpha()
