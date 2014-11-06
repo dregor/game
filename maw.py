@@ -34,7 +34,8 @@ class Maw(g_object):
 
     def recreate(self, radius, n):
         self.radius = radius
-        if n < 3: n = 3
+        if n < 3:
+            n = 3
         self.n = n
         for f in self.body.fixtures:
             self.body.DestroyFixture(f)

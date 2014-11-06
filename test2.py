@@ -4,6 +4,11 @@ from math import pi
 import Box2D as b2
 
 
+def test3(game):
+    game.maw = Maw(game, position=(0, 0), radius=10, n=6)
+    game.g_objects.append(game.maw)
+
+
 def test2(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)
     game.g_objects.append(game.maw)

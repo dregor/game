@@ -85,7 +85,7 @@ class debug_draw():
         xf1, xf2 = bodyA.transform, bodyB.transform
         x1, x2 = xf1.position, xf2.position
         p1, p2 = joint.anchorA, joint.anchorB
-        color = b2Color(0.5, 0.8, 0.8)
+        color = b2Color(0.3, 0.1, 0.1)
 
         if isinstance(joint, b2DistanceJoint):
             self.draw_segment(p1, p2, color)
@@ -142,10 +142,10 @@ class debuger():
         self.game = game
         self.DebugDraw = debug_draw(self.game)
 
-    def text_out(self, text, pt, color=THECOLORS['red'], ):
+    def text_out(self, text, pt, color=THECOLORS['black'], ):
         if pygame.font:
             font = self.game.font
-            text = font.render(text, 4, color)
+            text = font.render(text, 5, color)
             # textpos = text.get_rect()
             # textpos.center = pt
             self.game.screen.blit(text, pt)
