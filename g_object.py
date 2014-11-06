@@ -1,4 +1,4 @@
-from g_surface import g_surface
+from g_surface import G_Surface
 
 
 class g_object():
@@ -22,7 +22,7 @@ class g_object():
 
         self.body = body_def(position=position, angle=angle)
 
-        self.surface = g_surface()
+        self.surface = G_Surface()
         self.body.angularDamping = .5
         self.body.userData = self
 

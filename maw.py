@@ -33,6 +33,9 @@ class Maw(g_object):
                                             bodyB=self.center_box,
                                             anchor=position)
         self.recreate(radius, n)
+        for item in self.body.fixtures:
+            item.filterData.maskBits = 0xffff
+            item.filterData.categoryBits = 0x0001
 
     def recreate(self, radius, n):
         self.radius = radius
@@ -61,8 +64,8 @@ class Maw(g_object):
             self.outside.append((outside[i], outside[i + 1]))
             yield [outside[i], outside[i + 1], inside[i + 1], inside[i]]
 
-    def _place(self, i=0, inside=True):
-        if inside:
+    def _place(self, i=0, is_inside=True):
+        if is_inside:
             pts = self.inside[i]
         else:
             pts = self.outside[i]
@@ -70,15 +73,17 @@ class Maw(g_object):
         x2, y2 = self.body.transform * pts[1]
         return geo.center((x1, y1), (x2, y2))
 
-    def add_body(self, child, inside=True):
+    def add_body(self, child, is_inside=True):
         import random
         from math import pi
 
+        child.is_inside = is_inside
+
         i = random.randint(0, len(self.body.fixtures) - 1)
-        pt = self._place(i, inside)
+        pt = self._place(i, is_inside)
         angle = geo.angle_to_centre(self.position, geo.quarter(self.position, pt), pt)
 
-        if inside:
+        if is_inside:
             additive = child.additive
             child.body.angle = 2 * pi - angle
         else:
@@ -97,16 +102,16 @@ class Maw(g_object):
                 self.recreate(self.radius - 0.5, self.n - 1)
 
             if key[K_LEFT]:
-                self.MOVE_RIGHT = True
+                self.MOVE_LEFT = True
 
             if key[K_RIGHT]:
-                self.MOVE_LEFT = True
+                self.MOVE_RIGHT = True
 
         if event.type == KEYUP:
             if event.key == K_LEFT:
-                self.MOVE_RIGHT = False
-            if event.key == K_RIGHT:
                 self.MOVE_LEFT = False
+            if event.key == K_RIGHT:
+                self.MOVE_RIGHT = False
 
     def move(self, direction=1):
         self.body.ApplyTorque(self.speed * direction * (1 - pow(2, self.radius / 1.8)), wake=True)
