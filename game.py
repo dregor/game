@@ -6,7 +6,7 @@ import Box2D as b2
 
 from camera import Camera
 from debug import debuger
-from test2 import test2, test1
+from test2 import test3, test2, test1
 
 
 class QueryCallback(b2.b2QueryCallback):
@@ -59,7 +59,7 @@ class Game():
         self.joint_box = None
         self.mouse_joint = None
         self.maw = None
-        test2(self)
+        test3(self)
 
     def to_screen(self, pt):
         return (int((pt[0] * self.PPM * self.camera.zoom) - self.camera.offset[0]),
