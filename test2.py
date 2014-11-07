@@ -9,24 +9,30 @@ def test3(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)
     game.g_objects.append(game.maw)
 
+    game.legless = LegLess(game, (0, 0), name='leg0')
+    game.maw.add_body(game.legless, is_inside=False)
+    app = game.g_objects.append
+    app(game.legless)
+
+
 def test2(game):
-    game.maw = Maw(game, position=(0, 0), radius=10, n=6)
+    game.maw = Maw(game, position=(0, 0), radius=15, n=10)
     game.g_objects.append(game.maw)
 
     game.bactery1 = Bactery(game, (0, 5), name='b1')
-    game.maw.add_body(game.bactery1, is_inside=False)
     game.bactery2 = Bactery(game, (5, 0), name='b2')
-    game.bactery3 = Bactery(game, (0, -20), name='b3', is_you=True, is_inside=False)
+    game.bactery3 = Bactery(game, (0, -25), name='b3', is_you=True, is_inside=False)
     game.bactery4 = Bactery(game, (-5, 0), name='b4')
 
-    game.triangle = LegLess(game, (0, 0), name='leg0')
+    game.legless = LegLess(game, (0, 0), name='leg0')
+    game.maw.add_body(game.legless, is_inside=False)
+    app = game.g_objects.append
 
-    game.maw.add_body(game.triangle, is_inside=True)
-    game.g_objects.append(game.triangle)
-    game.g_objects.append(game.bactery1)
-    game.g_objects.append(game.bactery2)
-    game.g_objects.append(game.bactery3)
-    game.g_objects.append(game.bactery4)
+    app(game.legless)
+    app(game.bactery1)
+    app(game.bactery2)
+    app(game.bactery3)
+    app(game.bactery4)
 
     game.bactery1.body.fixtures[0].filterData.maskBits = 0x0001 + 0x0002
     game.bactery2.body.fixtures[0].filterData.maskBits = 0x0001 + 0x0002
@@ -38,7 +44,7 @@ def test2(game):
     game.bactery3.body.fixtures[0].filterData.categoryBits = 0x0004
     game.bactery4.body.fixtures[0].filterData.categoryBits = 0x0004
 
-    joint_name = 'None'
+    joint_name = 'revolute'
 
     if joint_name == 'distance':
         game.world.CreateDistanceJoint(bodyA=game.bactery1.body,
@@ -61,7 +67,7 @@ def test2(game):
                                     bodyB=game.bactery2.body,
                                     collideConnected=True)
 
-        game.world.joints[1].springDampingRatio = 10
+        game.world.joints[1].springDampingRatio = 10000
 
     elif joint_name == 'pulley':
         game.world.CreatePulleyJoint(bodyA=game.bactery1.body,

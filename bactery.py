@@ -1,18 +1,18 @@
 import random
 import pygame
 from pygame.locals import *
-from g_object import g_object
+from personage import Personage
 import Box2D as b2
 
 
-class Bactery(g_object):
+class Bactery(Personage):
     images = ['images/ameb.gif', 'images/bakt.gif', 'images/microb.gif']
     MOVE_LEFT = False
     MOVE_RIGHT = False
 
     def __init__(self, game, position=(0, 0), angle=0, name='', speed=300, is_inside=True, is_you=False,
                  angle_vector=(0, 1)):
-        g_object.__init__(self, game, position, angle, is_inside=is_inside)
+        Personage.__init__(self, game, position, angle, is_inside=is_inside)
         self.speed = speed
         self.is_you = is_you
         self.surface.load(random.sample(self.images, 1)[0])
@@ -28,9 +28,10 @@ class Bactery(g_object):
         if self.is_you:
             self.center_box = game.world.CreateDynamicBody(position=self.position,
                                                            shapes=b2.b2PolygonShape(box=(0.5, 0.5)))
-            for item in self.center_box.fixtures:
-                item.filterData.maskBits = 0x0003
-                item.filterData.categoryBits = 0x0000
+            for part in self.parts:
+                for item in part['body'].fixtures:
+                    item.filterData.maskBits = 0xfffd
+                    item.filterData.categoryBits = 0x0000
 
             game.world.CreatePrismaticJoint(bodyA=game.maw.center_box,
                                             bodyB=self.center_box,
@@ -60,15 +61,15 @@ class Bactery(g_object):
         self.body.ApplyAngularImpulse(self.speed * direction * self.radius, wake=True)
 
     def draw(self):
-        g_object.draw(self)
+        Personage.draw(self)
         self.game.debuger.text_out(self.name, self.game.to_screen(self.position))
 
     def update(self):
         if not self.is_you:
-            rand = random.randint(-5, 5)
+            rand = random.randint(-3, 3)
             if rand != 0:
                 self.move(rand)
-        g_object.update(self)
+        Personage.update(self)
         if self.MOVE_LEFT:
             self.move(-1)
         if self.MOVE_RIGHT:

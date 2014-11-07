@@ -3,12 +3,12 @@ from pygame.locals import *
 
 import Box2D as b2
 
-from g_object import g_object
+from g_object import G_Object
 
-from geometry import geo
+from geometry import Geo
 
 
-class Maw(g_object):
+class Maw(G_Object):
     inside_obj = []
     outside_obj = []
     inside = []
@@ -20,7 +20,7 @@ class Maw(g_object):
     MOVE_RIGHT = False
 
     def __init__(self, game, position=(0, 0), angle=0, radius=10, n=3):
-        g_object.__init__(self, game, position, angle)
+        G_Object.__init__(self, game, position, angle)
         self.center_box = self.game.world.CreateStaticBody(
             position=position,
             shapes=b2.b2PolygonShape(box=(0.5, 0.5))
@@ -53,9 +53,9 @@ class Maw(g_object):
             self.body.CreateFixture(fixture)
 
     def _polyhedron_full(self, r=1, n=5):
-        outside = geo.polyhedron(r + 2, n)
+        outside = Geo.polyhedron(r + 2, n)
         outside.append(outside[0])
-        inside = geo.polyhedron(r, n)
+        inside = Geo.polyhedron(r, n)
         inside.append(inside[0])
         self.inside[:] = []
         self.outside[:] = []
@@ -71,7 +71,7 @@ class Maw(g_object):
             pts = self.outside[i]
         x1, y1 = self.body.transform * pts[0]
         x2, y2 = self.body.transform * pts[1]
-        return geo.center((x1, y1), (x2, y2))
+        return Geo.center((x1, y1), (x2, y2))
 
     def add_body(self, child, is_inside=True):
         import random
@@ -81,16 +81,16 @@ class Maw(g_object):
 
         i = random.randint(0, len(self.body.fixtures) - 1)
         pt = self._place(i, is_inside)
-        angle = geo.angle_to_centre(self.position, geo.quarter(self.position, pt), pt)
+        angle = Geo.angle_to_centre(self.position, Geo.quarter(self.position, pt), pt)
 
         if is_inside:
             additive = child.additive
-            child.body.angle = 2 * pi - angle
+            child.set_angle(2 * pi - angle)
         else:
-            child.body.angle = pi - angle
+            child.set_angle(pi - angle)
             additive = tuple(map(lambda (x): x * -1, child.additive))
 
-        child.body.position = geo.additive(2 * pi - angle, pt, additive)
+        child.set_position(Geo.additive(2 * pi - angle, pt, additive))
 
     def event(self, event):
         if event.type == KEYDOWN:
@@ -130,7 +130,7 @@ class Maw(g_object):
                 pt = self._place(i, False)
                 pygame.draw.circle(self.game.screen, (150, 150, 150), self.game.to_screen(pt),
                                    int(10 * self.game.camera.zoom), 1)
-        g_object.draw(self)
+        G_Object.draw(self)
 
     def update(self):
         if self.MOVE_LEFT:
@@ -138,12 +138,13 @@ class Maw(g_object):
         if self.MOVE_RIGHT:
             self.move()
 
-        for item in self.game.g_objects:
-            if item is not self:
-                q = geo.quarter_direction(self.position, item.position)
-                if not item.is_inside:
-                    q = q[0] * -1, q[1] * -1
-                force = geo.to_centre(self.position, item.position)
-                force = force[0] * 15 * q[0], force[1] * 15 * q[1]
-                item.body.ApplyLinearImpulse(force, item.position, wake=True)
-        g_object.update(self)
+        for person in self.game.g_objects:
+            if person is not self:
+                for item in person.parts:
+                    q = Geo.quarter_direction(self.position, item['body'].position)
+                    if not person.is_inside:
+                        q = q[0] * -1, q[1] * -1
+                    force = Geo.to_centre(self.position, item['body'].position)
+                    force = force[0] * 5 * q[0], force[1] * 5 * q[1]
+                    # item['body'].ApplyLinearImpulse(force, person.position, wake=True)
+        G_Object.update(self)
