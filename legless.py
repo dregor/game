@@ -4,7 +4,7 @@ from pygame.locals import *
 from personage import Personage
 import Box2D as b2
 from math import pi
-
+from BitMasks import Bits
 
 class LegLess(Personage):
     images = ['images/ameb.gif', 'images/bakt.gif', 'images/microb.gif']
@@ -13,9 +13,8 @@ class LegLess(Personage):
 
     def __init__(self, game, position=(0, 0), angle=0, name='', speed=10000, is_you=False, is_inside=True,
                  angle_vector=(0, 1)):
-        Personage.__init__(self, game, position, angle, is_inside=is_inside)
+        Personage.__init__(self, game, position, angle, is_inside=is_inside, is_you=is_you)
         self.speed = speed
-        self.is_you = is_you
         self.surface.load(random.sample(self.images, 1)[0])
         size = self.surface.origin.get_size()
         self.name = name
@@ -35,6 +34,9 @@ class LegLess(Personage):
         self.left_leg.CreatePolygonFixture(vertices=[(-r / 2, -0.4), (-r / 4, -0.4), (-3 * r / 8, -0.8)],
                                            density=0.5,
                                            friction=8)
+        self.left_leg.CreatePolygonFixture(vertices=[(-r / 2, 0.4), (-r / 4, 0.4), (-3 * r / 8, 0.8)],
+                                           density=0.5,
+                                           friction=8)
         self.add_part(self.left_leg)
         j1 = game.world.CreateRevoluteJoint(bodyA=self.left_leg,
                                             bodyB=self.body,
@@ -51,6 +53,9 @@ class LegLess(Personage):
         self.right_leg.CreatePolygonFixture(vertices=[(r / 2, -0.4), (r / 4, -0.4), (3 * r / 8, -0.8)],
                                             density=0.5,
                                             friction=8)
+        self.right_leg.CreatePolygonFixture(vertices=[(r / 2, 0.4), (r / 4, 0.4), (3 * r / 8, 0.8)],
+                                            density=0.5,
+                                            friction=8)
         self.add_part(self.right_leg)
         j2 = game.world.CreateRevoluteJoint(bodyA=self.right_leg,
                                             bodyB=self.body,
@@ -60,20 +65,6 @@ class LegLess(Personage):
         j2.limitEnabled = True
         j2.upperLimit = pi / 8
         j2.lowerLimit = - pi / 8
-
-        if self.is_you:
-            self.center_box = game.world.CreateDynamicBody(position=self.position,
-                                                           shapes=b2.b2PolygonShape(box=(0.5, 0.5)))
-            for item in self.center_box.fixtures:
-                item.filterData.maskBits = 0x0003
-                item.filterData.categoryBits = 0x0000
-
-            game.world.CreatePrismaticJoint(bodyA=game.maw.center_box,
-                                            bodyB=self.center_box,
-                                            axis=angle_vector)
-
-            game.world.CreateRevoluteJoint(bodyA=self.center_box,
-                                           bodyB=self.body)
 
     def event(self, event):
         if self.is_you:

@@ -7,7 +7,7 @@ import Box2D as b2
 from camera import Camera
 from debug import debuger
 from test2 import test3, test2, test1
-
+from BitMasks import Bits
 
 class QueryCallback(b2.b2QueryCallback):
     def __init__(self, p):
@@ -82,8 +82,8 @@ class Game():
                 position=pt,
                 shapes=b2.b2PolygonShape(box=(0.3, 0.3)))
             for item in self.joint_box.fixtures:
-                item.filterData.maskBits = 0x0003
-                item.filterData.categoryBits = 0x0000
+                item.filterData.maskBits = Bits.NOTHING_MASK
+                item.filterData.categoryBits = Bits.NOTHING_BITS
 
             self.mouse_joint = self.world.CreateMouseJoint(
                 bodyA=self.joint_box,

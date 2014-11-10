@@ -7,6 +7,8 @@ from g_object import G_Object
 
 from geometry import Geo
 
+from BitMasks import Bits
+
 
 class Maw(G_Object):
     inside_obj = []
@@ -26,16 +28,16 @@ class Maw(G_Object):
             shapes=b2.b2PolygonShape(box=(0.5, 0.5))
         )
         for item in self.center_box.fixtures:
-            item.filterData.maskBits = 0x0003
-            item.filterData.categoryBits = 0x0000
+            item.filterData.maskBits = Bits.NOTHING_MASK
+            item.filterData.categoryBits = Bits.NOTHING_BITS
 
         self.game.world.CreateRevoluteJoint(bodyA=self.body,
                                             bodyB=self.center_box,
                                             anchor=position)
         self.recreate(radius, n)
         for item in self.body.fixtures:
-            item.filterData.maskBits = 0xffff
-            item.filterData.categoryBits = 0x0001
+            item.filterData.maskBits = Bits.FULL_MASK
+            item.filterData.categoryBits = Bits.FULL_BITS
 
     def recreate(self, radius, n):
         self.radius = radius

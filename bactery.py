@@ -28,10 +28,6 @@ class Bactery(Personage):
         if self.is_you:
             self.center_box = game.world.CreateDynamicBody(position=self.position,
                                                            shapes=b2.b2PolygonShape(box=(0.5, 0.5)))
-            for part in self.parts:
-                for item in part['body'].fixtures:
-                    item.filterData.maskBits = 0xfffd
-                    item.filterData.categoryBits = 0x0000
 
             game.world.CreatePrismaticJoint(bodyA=game.maw.center_box,
                                             bodyB=self.center_box,
