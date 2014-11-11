@@ -7,6 +7,8 @@ from g_object import G_Object
 
 from geometry import Geo
 
+from math import exp
+
 from BitMasks import Bits
 
 
@@ -17,7 +19,7 @@ class Maw(G_Object):
     outside = []
     radius = 0
     n = 0
-    speed = 200
+    speed = 300
     MOVE_LEFT = False
     MOVE_RIGHT = False
 
@@ -116,7 +118,7 @@ class Maw(G_Object):
                 self.MOVE_RIGHT = False
 
     def move(self, direction=1):
-        self.body.ApplyTorque(self.speed * direction * (1 - pow(2, self.radius / 1.9)), wake=True)
+        self.body.ApplyTorque(self.speed * direction * (1 - exp(self.radius / 1.9)), wake=True)
         """
         import platform
         if "windows" in platform.system():
@@ -147,6 +149,6 @@ class Maw(G_Object):
                     if not person.is_inside:
                         q = q[0] * -1, q[1] * -1
                     force = Geo.to_centre(self.position, item['body'].position)
-                    force = force[0] * 5 * q[0], force[1] * 5 * q[1]
+                    force = force[0] * q[0], force[1] * q[1]
                     item['body'].ApplyLinearImpulse(force, item['body'].position, wake=True)
         G_Object.update(self)

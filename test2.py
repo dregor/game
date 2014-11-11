@@ -8,18 +8,11 @@ from BitMasks import Bits
 def test3(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)
     game.g_objects.append(game.maw)
-
-    game.legless = LegLess(game, (0, -20), name='leg0', is_you=True, is_inside=False)
-    game.bactery1 = Bactery(game, (10, -25), name='bact   1', is_inside=False)
-    game.bactery2 = Bactery(game, (-10, -25), name='bact   2', is_inside=False)
-    # game.maw.add_body(game.legless, is_inside=False)
+    game.legless0 = LegLess(game, (0, -20), name='leg0', is_you=True, is_inside=False)
+    game.legless1 = LegLess(game, (0, -20), name='leg0', is_you=False, is_inside=False)
     app = game.g_objects.append
-    app(game.legless)
-    app(game.bactery1)
-    app(game.bactery2)
-
-    game.bactery2.body.fixtures[0].filterData.maskBits = Bits.BACKGROUND_OBJECT_MASK
-    game.bactery2.body.fixtures[0].filterData.categoryBits = Bits.BACKGROUND_OBJECT_BITS
+    app(game.legless0)
+    app(game.legless1)
 
 
 def test2(game):
