@@ -7,7 +7,7 @@ import Box2D as b2
 from camera import Camera
 from debug import debuger
 from test2 import test3, test2, test1
-from BitMasks import Bits
+from bits_masks import Bits
 
 class QueryCallback(b2.b2QueryCallback):
     def __init__(self, p):

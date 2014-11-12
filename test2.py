@@ -3,7 +3,7 @@ from legless import LegLess
 from maw import Maw
 from math import pi
 import Box2D as b2
-from BitMasks import Bits
+from bits_masks import Bits
 
 def test3(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)

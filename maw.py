@@ -9,7 +9,7 @@ from geometry import Geo
 
 from math import exp
 
-from BitMasks import Bits
+from bits_masks import Bits
 
 
 class Maw(G_Object):
@@ -24,7 +24,7 @@ class Maw(G_Object):
     MOVE_RIGHT = False
 
     def __init__(self, game, position=(0, 0), angle=0, radius=10, n=3):
-        G_Object.__init__(self, game, position, angle)
+        G_Object.__init__(self, game, position, angle, image='images/default.png')
         self.center_box = self.game.world.CreateStaticBody(
             position=position,
             shapes=b2.b2PolygonShape(box=(0.5, 0.5))
@@ -119,11 +119,6 @@ class Maw(G_Object):
 
     def move(self, direction=1):
         self.body.ApplyTorque(self.speed * direction * (1 - exp(self.radius / 1.9)), wake=True)
-        """
-        import platform
-        if "windows" in platform.system():
-            self.body.ApplyTorque(self.speed * direction * self.radius)
-        else:"""
 
     def draw(self):
         if self.game.debug:
@@ -144,11 +139,11 @@ class Maw(G_Object):
 
         for person in self.game.g_objects:
             if person is not self:
-                for item in person.parts:
-                    q = Geo.quarter_direction(self.position, item['body'].position)
+                for item in person.give_all_obj():
+                    q = Geo.quarter_direction(self.position, item.position)
                     if not person.is_inside:
                         q = q[0] * -1, q[1] * -1
-                    force = Geo.to_centre(self.position, item['body'].position)
+                    force = Geo.to_centre(self.position, item.position)
                     force = force[0] * q[0], force[1] * q[1]
-                    item['body'].ApplyLinearImpulse(force, item['body'].position, wake=True)
+                    # item.body.ApplyLinearImpulse(force, item.position, wake=True)
         G_Object.update(self)

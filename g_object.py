@@ -18,7 +18,8 @@ class G_Object():
     def set_angle(self, val):
         self.body.angle = val
 
-    def __init__(self, game, position=(0.0, 0.0), angle=0, dynamic=True, additive=(0.0, 0.0), is_inside=True):
+    def __init__(self, game, position=(0.0, 0.0), angle=0, dynamic=True, additive=(0.0, 0.0), is_inside=True,
+                 image='default.png'):
         self.game = game
         self.additive = additive
         self.is_inside = is_inside
@@ -28,9 +29,9 @@ class G_Object():
         else:
             body_def = self.game.world.CreateStaticbody
 
-        self.body = body_def(position=position, angle=angle)
+        self.body = body_def(position=position, angle=angle, angularDamping=1.8)
         self.surface = G_Surface()
-        self.body.angularDamping = .5
+        self.surface.load(image)
         self.body.userData = self
 
     def event(self, event):
