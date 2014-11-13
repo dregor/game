@@ -5,24 +5,34 @@ from g_object import G_Object
 from math import pi
 
 
+class Circle_body(G_Object):
+    def __init__(self, game, position=(0, 0), angle=0, is_inside=True, radius=1, image='images/default.png'):
+        G_Object.__init__(self, game, position=position, angle=angle, is_inside=is_inside, image=image)
+        size = self.surface.origin.get_size()
+        self.radius = ((size[0] + size[1]) / 4) / game.PPM
+        self.body.CreateCircleFixture(radius=radius,
+                                      density=3,
+                                      friction=8)
+
+
 class Shoulder(G_Object):
-    def __init__(self, game, position=(0, 0), angle=0, is_inside=True, size=(1, 0.4)):
-        G_Object.__init__(self, game, position=position, angle=angle, is_inside=is_inside, image='images/default.png')
+    def __init__(self, game, position=(0, 0), angle=0, is_inside=True, size=(1, 0.4), image='images/default.png'):
+        G_Object.__init__(self, game, position=position, angle=angle, is_inside=is_inside, image=image)
         width, height = size
         self.body.CreateFixturesFromShapes(b2.b2PolygonShape(box=(height, height)))
-        self.body.density = 0.001
+        self.body.density = 0.01
 
 
 class Forearm(G_Object):
-    def __init__(self, game, position=(0, 0), angle=0, is_inside=True, size=(1, 0.4)):
-        G_Object.__init__(self, game, position=position, angle=angle, is_inside=is_inside, image='images/default.png')
+    def __init__(self, game, position=(0, 0), angle=0, is_inside=True, size=(1, 0.4), image='images/default.png'):
+        G_Object.__init__(self, game, position=position, angle=angle, is_inside=is_inside, image=image)
         width, height = size
         self.body.CreatePolygonFixture(
             vertices=[(-width / 2, height / 2),
                       (width / 2, height / 2),
                       (width / 2, -height / 2),
                       (-width / 2, -height / 2)],
-            density=1.5,
+            density=0.01,
             friction=8)
         '''
         self.body.CreatePolygonFixture(vertices=[(-width / 2, height/2),
