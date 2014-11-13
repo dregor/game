@@ -1,23 +1,38 @@
 from personage import Personage
 from Box2D import b2Vec2 as Vec2
-from monkey_hand import Hand
-
+from personage_parts import Hand, Circle_body
+from random import sample
 
 class LegLess(Personage):
-    def __init__(self, game, position=(0, 0), angle=0, name='', speed=8000, is_you=False, is_inside=True):
-        Personage.__init__(self, game=game, position=position, angle=angle, name=name, speed=speed, is_you=is_you,
-                           is_inside=is_inside)
-        size = self.surface.origin.get_size()
-        r = self.radius = ((size[0] + size[1]) / 4) / game.PPM
-        self.additive = (0, self.radius)
+    images = ['images/ameb.gif', 'images/bakt.gif', 'images/microb.gif']
 
-        self.body.CreateCircleFixture(radius=self.radius,
-                                      density=9,
-                                      friction=8)
+    def __init__(self, game, position=(0, 0), angle=0, name='', speed=8000, is_you=False, is_inside=True):
+        self.body = Circle_body(game,
+                                position=position,
+                                is_inside=is_inside,
+                                image=sample(self.images, 1)[0])
+
+        r = self.body.radius
+
+        self.additive = (0, r)
+
+        Personage.__init__(self,
+                           game=game,
+                           position=position,
+                           angle=angle,
+                           name=name,
+                           speed=speed,
+                           is_you=is_you,
+                           is_inside=is_inside,
+                           g_body=self.body)
 
         self.left_hand = Hand(game, position=self.position + Vec2(0, 0.4 / 2 - r), is_inside=is_inside, size=(r, 0.4))
-
         self.add_part(self.left_hand)
+
+        game.world.CreateRevoluteJoint(bodyA=self.left_hand.shoulder.body,
+                                       bodyB=self.body.body,
+                                       localAnchorA=(0, 0),
+                                       localAnchorB=(0, r - 0.4))
 
         '''
         self.right_shoulder = cdb(position=self.position + Vec2(0, r - 0.4),
@@ -56,7 +71,7 @@ class LegLess(Personage):
         Personage.event(self, event)
 
     def move(self, direction=1):
-        self.body.ApplyTorque(self.speed * direction * self.radius, wake=True)
+        self.body.move(direction=direction, speed=self.speed)
 
     def draw(self):
         Personage.draw(self)

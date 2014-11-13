@@ -3,16 +3,14 @@ from legless import LegLess
 from maw import Maw
 from math import pi
 import Box2D as b2
-from bits_masks import Bits
+
 
 def test3(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=6)
     game.g_objects.append(game.maw)
     game.legless0 = LegLess(game, (0, -20), name='leg0', is_you=True, is_inside=False)
-    game.legless1 = LegLess(game, (0, -20), name='leg0', is_you=False, is_inside=False)
     app = game.g_objects.append
     app(game.legless0)
-    app(game.legless1)
 
 
 def test2(game):

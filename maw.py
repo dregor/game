@@ -11,6 +11,8 @@ from math import exp
 
 from bits_masks import Bits
 
+from Box2D import b2Vec2 as Vec2
+
 
 class Maw(G_Object):
     inside_obj = []
@@ -18,6 +20,7 @@ class Maw(G_Object):
     inside = []
     outside = []
     radius = 0
+    gravity = 100
     n = 0
     speed = 300
     MOVE_LEFT = False
@@ -142,8 +145,8 @@ class Maw(G_Object):
                 for item in person.give_all_obj():
                     q = Geo.quarter_direction(self.position, item.position)
                     if not person.is_inside:
-                        q = q[0] * -1, q[1] * -1
+                        q = Vec2(q) * -1
                     force = Geo.to_centre(self.position, item.position)
                     force = force[0] * q[0], force[1] * q[1]
-                    # item.body.ApplyLinearImpulse(force, item.position, wake=True)
+                    item.body.ApplyLinearImpulse(force, item.position, wake=True)
         G_Object.update(self)
