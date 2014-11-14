@@ -3,13 +3,14 @@ from Box2D import b2Vec2 as Vec2
 from g_object import G_Object
 from math import pi
 
+
 class Circle_body(G_Object):
     def __init__(self, game, position=(0, 0), angle=0, is_inside=True, radius=1, image='images/default.png'):
         G_Object.__init__(self, game, position=position, angle=angle, is_inside=is_inside, image=image)
         size = self.surface.origin.get_size()
         self.radius = ((size[0] + size[1]) / 4) / game.PPM
         self.body.CreateCircleFixture(radius=radius,
-                                      density=3,
+                                      density=15,
                                       friction=8)
 
     def move(self, speed=10, direction=1):
@@ -41,17 +42,16 @@ class Forearm(G_Object):
             density=20,
             friction=2)
 
-        self.body.CreatePolygonFixture(vertices=[(-width / 2, height/2),
+        self.body.CreatePolygonFixture(vertices=[(-width / 2, height / 2),
                                                  (-width / 4, 1.5 * height),
-                                                 (0, height/2)],
+                                                 (0, height / 2)],
                                        density=5,
-                                       friction=8)
-        self.body.CreatePolygonFixture(vertices=[(-width / 2, -height/2),
+                                       friction=18)
+        self.body.CreatePolygonFixture(vertices=[(-width / 2, -height / 2),
                                                  (-width / 4, -1.5 * height),
-                                                 (0, -height/2)],
+                                                 (0, -height / 2)],
                                        density=5,
-                                       friction=8)
-
+                                       friction=18)
 
 
 class Hand(Composite):

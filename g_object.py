@@ -1,10 +1,8 @@
 from g_surface import G_Surface
 from Box2D import b2Vec2 as Vec2
-from math import fabs
 
 
 class G_Object():
-
     @property
     def position(self):
         return self.body.position

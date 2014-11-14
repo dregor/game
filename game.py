@@ -124,17 +124,17 @@ class Game():
                     self.debug = False
                 else:
                     self.debug = True
-            '''
+
             if event.type == KEYDOWN and event.key == K_i:
-                obj = self.g_objects[1]
+                obj = self.g_objects[2]
                 obj.is_inside = True
                 self.maw.add_body(obj)
 
             if event.type == KEYDOWN and event.key == K_o:
-                obj = self.g_objects[1]
+                obj = self.g_objects[2]
                 obj.is_inside = False
                 self.maw.add_body(obj, False)
-            '''
+
             if event.type == KEYDOWN and event.key == K_p:
                 if self.playing:
                     self.playing = False
@@ -175,7 +175,7 @@ class Game():
         pygame.display.update()
 
     def update(self):
-        self.world.Step(self.TIME_STEP, 8, 6)
+        self.world.Step(self.TIME_STEP, 10, 8)
 
         for item in self.g_objects:
             item.update()

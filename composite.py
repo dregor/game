@@ -23,6 +23,8 @@ class Composite():
     def position(self, val):
         for obj in self._parts:
             obj['obj'].position = Vec2(val) + Vec2(obj['trans'])
+        self._position = val
+
 
     @property
     def angle(self):

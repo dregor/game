@@ -92,21 +92,21 @@ class Maw(G_Object):
 
         if is_inside:
             additive = child.additive
-            child.set_angle(2 * pi - angle)
+            child.angle = 2 * pi - angle
         else:
-            child.set_angle(pi - angle)
+            child.angle = pi - angle
             additive = tuple(map(lambda (x): x * -1, child.additive))
 
-        child.set_position(Geo.additive(2 * pi - angle, pt, additive))
+        child.position = Geo.additive(2 * pi - angle, pt, additive)
 
     def event(self, event):
         if event.type == KEYDOWN:
             key = pygame.key.get_pressed()
             if key[K_PAGEUP]:
-                self.recreate(self.radius + 0.5, self.n + 1)
+                self.recreate(self.radius + 1, self.n + 1)
 
             if key[K_PAGEDOWN]:
-                self.recreate(self.radius - 0.5, self.n - 1)
+                self.recreate(self.radius - 1, self.n - 1)
 
             if key[K_LEFT]:
                 self.MOVE_LEFT = True
@@ -121,7 +121,7 @@ class Maw(G_Object):
                 self.MOVE_RIGHT = False
 
     def move(self, direction=1):
-        self.body.ApplyTorque(self.speed * direction * (1 - exp(self.radius / 1.9)), wake=True)
+        self.body.ApplyTorque(self.speed * direction * self.radius * 10, wake=True)
 
     def draw(self):
         if self.game.debug:
@@ -136,9 +136,9 @@ class Maw(G_Object):
 
     def update(self):
         if self.MOVE_LEFT:
-            self.move(-1)
-        if self.MOVE_RIGHT:
             self.move()
+        if self.MOVE_RIGHT:
+            self.move(-1)
 
         for person in self.game.g_objects:
             if person is not self:

@@ -1,6 +1,7 @@
 from composite import Composite
 import Box2D as b2
 from bits_masks import Bits
+from Box2D import b2Vec2 as Vec2
 import pygame
 from pygame.locals import *
 from random import randint
@@ -53,22 +54,25 @@ class Personage(Composite):
                 if key[K_RIGHT]:
                     self.MOVE_RIGHT = True
 
-                if event.type == KEYUP:
-                    if event.key == K_LEFT:
-                        self.MOVE_LEFT = False
-                    if event.key == K_RIGHT:
-                        self.MOVE_RIGHT = False
+            if event.type == KEYUP:
+                if event.key == K_LEFT:
+                    self.MOVE_LEFT = False
+                if event.key == K_RIGHT:
+                    self.MOVE_RIGHT = False
 
     def draw(self):
         Composite.draw(self)
-        self._game.debuger.text_out(self.name + '  -  ' + str(self.position), self._game.to_screen(self.position))
+        self._game.debuger.text_out('_' * 4 + '{0:.3f} : {1:.3f}'.format(self.position.x, self.position.y),
+                                    self._game.to_screen(self.position))
+        self._game.debuger.text_out('_' * 4 + '{0} - {1}'.format(self.__class__.__name__, self.name),
+                                    Vec2(self._game.to_screen(self.position)) + Vec2(0, 10))
 
     def update(self):
         Composite.update(self)
         if not self.is_you:
-            rand = randint(-3, 3)
+            rand = randint(-1, 1)
             if rand != 0:
-                self.move(rand)
+                self.move(rand * 0.5)
         if self.MOVE_LEFT:
             self.move(-1)
         if self.MOVE_RIGHT:

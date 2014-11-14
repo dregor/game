@@ -7,11 +7,16 @@ import Box2D as b2
 
 
 def test3(game):
-    game.maw = Maw(game, position=(0, 0), radius=10, n=6)
+    game.maw = Maw(game, position=(0, 0), radius=10, n=16)
     game.g_objects.append(game.maw)
     game.legless0 = LegLess(game, (0, -20), name='leg0', is_you=True, is_inside=False)
+    game.legless1 = LegLess(game, (0, -5), name='leg1', is_you=False, is_inside=True)
+    game.legless2 = LegLess(game, (0, 20), name='leg2', is_you=False, is_inside=False)
     app = game.g_objects.append
     app(game.legless0)
+    app(game.legless1)
+    app(game.legless2)
+    game.maw.add_body(game.legless1)
 
 
 def test2(game):
