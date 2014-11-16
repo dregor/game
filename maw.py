@@ -1,36 +1,29 @@
 import pygame
 from pygame.locals import *
-
-import Box2D as b2
-
-from g_object import G_Object
-
+import Box2D as B2
+from gameobject import GameObject
 from geometry import Geo
-
-from math import exp
-
 from bits_masks import Bits
-
 from Box2D import b2Vec2 as Vec2
 
 
-class Maw(G_Object):
+class Maw(GameObject):
     inside_obj = []
     outside_obj = []
     inside = []
     outside = []
     radius = 0
-    gravity = 100
+    gravity = 1.1
     n = 0
-    speed = 300
+    speed = 60000
     MOVE_LEFT = False
     MOVE_RIGHT = False
 
     def __init__(self, game, position=(0, 0), angle=0, radius=10, n=3):
-        G_Object.__init__(self, game, position, angle, image='images/default.png')
+        GameObject.__init__(self, game, position, angle, image='images/default.png')
         self.center_box = self.game.world.CreateStaticBody(
             position=position,
-            shapes=b2.b2PolygonShape(box=(0.5, 0.5))
+            shapes=B2.b2PolygonShape(box=(0.5, 0.5))
         )
         for item in self.center_box.fixtures:
             item.filterData.maskBits = Bits.NOTHING_MASK
@@ -52,10 +45,10 @@ class Maw(G_Object):
         for f in self.body.fixtures:
             self.body.DestroyFixture(f)
         for vertices in self._polyhedron_full(r=radius, n=n):
-            fixture = b2.b2FixtureDef(
-                shape=b2.b2PolygonShape(vertices=vertices),
-                density=5,
-                friction=3.6,
+            fixture = B2.b2FixtureDef(
+                shape=B2.b2PolygonShape(vertices=vertices),
+                density=50,
+                friction=5,
             )
             self.body.CreateFixture(fixture)
 
@@ -88,7 +81,7 @@ class Maw(G_Object):
 
         i = random.randint(0, len(self.body.fixtures) - 1)
         pt = self._place(i, is_inside)
-        angle = Geo.angle_to_centre(self.position, Geo.quarter(self.position, pt), pt)
+        angle = Geo.angle_to_centre(self.get_position(), Geo.quarter(self.get_position(), pt), pt)
 
         if is_inside:
             additive = child.additive
@@ -97,7 +90,7 @@ class Maw(G_Object):
             child.angle = pi - angle
             additive = tuple(map(lambda (x): x * -1, child.additive))
 
-        child.position = Geo.additive(2 * pi - angle, pt, additive)
+        child.set_position(Geo.additive(2 * pi - angle, pt, additive))
 
     def event(self, event):
         if event.type == KEYDOWN:
@@ -121,7 +114,7 @@ class Maw(G_Object):
                 self.MOVE_RIGHT = False
 
     def move(self, direction=1):
-        self.body.ApplyTorque(self.speed * direction * self.radius * 10, wake=True)
+        self.body.ApplyTorque(self.speed * direction * self.radius, wake=True)
 
     def draw(self):
         if self.game.debug:
@@ -132,7 +125,7 @@ class Maw(G_Object):
                 pt = self._place(i, False)
                 pygame.draw.circle(self.game.screen, (20, 20, 20), self.game.to_screen(pt),
                                    int(10 * self.game.camera.zoom), 1)
-        G_Object.draw(self)
+        GameObject.draw(self)
 
     def update(self):
         if self.MOVE_LEFT:
@@ -143,10 +136,10 @@ class Maw(G_Object):
         for person in self.game.g_objects:
             if person is not self:
                 for item in person.give_all_obj():
-                    q = Geo.quarter_direction(self.position, item.position)
+                    q = Geo.quarter_direction(self.get_position(), item.get_position())
                     if not person.is_inside:
                         q = Vec2(q) * -1
-                    force = Geo.to_centre(self.position, item.position)
-                    force = force[0] * q[0], force[1] * q[1]
-                    item.body.ApplyLinearImpulse(force, item.position, wake=True)
-        G_Object.update(self)
+                    force = Geo.to_centre(self.get_position(), item.get_position())
+                    force = force[0] * q[0] * self.gravity, force[1] * q[1] * self.gravity
+                    item.body.ApplyLinearImpulse(force, item.get_position(), wake=True)
+        GameObject.update(self)

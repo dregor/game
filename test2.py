@@ -2,21 +2,16 @@ from bactery import Bactery
 from legless import LegLess
 from maw import Maw
 from math import pi
-import Box2D as b2
+import Box2D as B2
 
 
 
 def test3(game):
     game.maw = Maw(game, position=(0, 0), radius=10, n=16)
     game.g_objects.append(game.maw)
-    game.legless0 = LegLess(game, (0, -20), name='leg0', is_you=True, is_inside=False)
-    game.legless1 = LegLess(game, (0, -5), name='leg1', is_you=False, is_inside=True)
-    game.legless2 = LegLess(game, (0, 20), name='leg2', is_you=False, is_inside=False)
+    game.legless0 = LegLess(game, (0, -20), name='leg0', is_you=False, is_inside=False)
     app = game.g_objects.append
     app(game.legless0)
-    app(game.legless1)
-    app(game.legless2)
-    game.maw.add_body(game.legless1)
 
 
 def test2(game):
@@ -127,9 +122,9 @@ def beneath(game):
     ]
     vertex = [[game.to_world(pt) for pt in vert] for vert in vertex]
     game.world.CreateStaticBody(
-        shapes=[b2.b2EdgeShape(vertices=vertex[0]),
-                b2.b2EdgeShape(vertices=vertex[1]),
-                b2.b2EdgeShape(vertices=vertex[2])],
+        shapes=[B2.b2EdgeShape(vertices=vertex[0]),
+                B2.b2EdgeShape(vertices=vertex[1]),
+                B2.b2EdgeShape(vertices=vertex[2])],
         position=(1, 0))
 
 
@@ -137,5 +132,5 @@ def test1(game):
     game.g_objects.append(Bactery(game, game.to_world((200, 140))))
     game.ground_body = game.world.CreateStaticBody(
         position=game.to_world((320, 440)),
-        shapes=[b2.b2PolygonShape(box=(10, 1)),
-                b2.b2PolygonShape(vertices=[(0, 1), (-10, 5), (-10, 1)])])
+        shapes=[B2.b2PolygonShape(box=(10, 1)),
+                B2.b2PolygonShape(vertices=[(0, 1), (-10, 5), (-10, 1)])])

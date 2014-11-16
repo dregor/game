@@ -1,10 +1,4 @@
-import random
-import pygame
-from pygame.locals import *
 from personage import Personage
-import Box2D as b2
-from math import pi
-from Box2D import b2Vec2 as Vec2
 
 
 class Centipede(Personage):

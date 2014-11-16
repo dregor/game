@@ -1,7 +1,8 @@
 import pygame
 from copy import copy
 
-class G_Surface():
+
+class GameSurface():
     def __init__(self, image=None):
         if image is None:
             self.origin = pygame.Surface((0, 0))

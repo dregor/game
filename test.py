@@ -1,5 +1,4 @@
 import sys
-
 import pygame
 from pygame.locals import *
 
@@ -20,8 +19,8 @@ def polyhedron(pos, r, n):
     from math import cos, sin, pi
 
     vertices = []
-    for i in range(0, n):
-        vertices.append((pos[0] + (r * sin(2 * i * pi / n)), pos[1] + (r * cos(2 * i * pi / n))))
+    for item in range(0, n):
+        vertices.append((pos[0] + (r * sin(2 * item * pi / n)), pos[1] + (r * cos(2 * item * pi / n))))
     return vertices
 
 

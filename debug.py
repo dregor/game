@@ -3,7 +3,7 @@ from Box2D import *
 from pygame.color import *
 
 
-class debug_draw():
+class DebugDraw():
     def __init__(self, game):
         self.surface = game.screen
         self.game = game
@@ -73,16 +73,15 @@ class debug_draw():
         elif isinstance(shape, b2CircleShape):
             self.draw_circle_shape(shape, transform, color)
         elif isinstance(shape, b2LoopShape):
-            vertices = shape.vertices
-            v1 = b2Mul(transform, vertices[-1])
-            for v2 in vertices:
+            v1 = b2Mul(transform, shape.vertices[-1])
+            for v2 in shape.vertices:
                 v2 = b2Mul(transform, v2)
                 self.draw_segment(v1, v2, color)
                 v1 = v2
 
     def draw_joint(self, joint):
-        bodyA, bodyB = joint.bodyA, joint.bodyB
-        xf1, xf2 = bodyA.transform, bodyB.transform
+        body_a, body_b = joint.bodyA, joint.bodyB
+        xf1, xf2 = body_a.transform, body_b.transform
         x1, x2 = xf1.position, xf2.position
         p1, p2 = joint.anchorA, joint.anchorB
         color = b2Color(0.3, 0.1, 0.1)
@@ -137,10 +136,10 @@ class debug_draw():
                 # self.DrawAABB(shape.getAABB(transform, childIndex), color)
 
 
-class debuger():
+class Debuger():
     def __init__(self, game):
         self.game = game
-        self.DebugDraw = debug_draw(self.game)
+        self.DebugDraw = DebugDraw(self.game)
 
     def text_out(self, text, pt, color=THECOLORS['black'], ):
         if pygame.font:
@@ -154,8 +153,10 @@ class debuger():
         pos = pygame.mouse.get_pos()
         self.DebugDraw.manual_draw()
         self.text_out('fps : ' + str(self.game.clock.get_fps()), (2, 2))
-        self.text_out('mouse : ' + str(pos), (2, 16))
-        self.text_out('mouse (world): ' + str(self.game.to_world(pos)), (2, 30))
+        self.text_out('mouse (screen): {0:.3f}, {1:.3f}'.format(pos[0], pos[1]), (2, 16))
+        self.text_out('mouse (world): {0:.3f}, {1:.3f}'.format(self.game.to_world(pos)[0], self.game.to_world(pos)[1]),
+                      (2, 30))
+        self.text_out('zoom : {0:.3f}, {1:.3f}'.format(self.game.camera.zoom, self.game.camera.zoom_level), (2, 44))
 
     def update(self):
         pass

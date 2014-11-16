@@ -1,22 +1,19 @@
-from g_surface import G_Surface
+from gamesurface import GameSurface
 from Box2D import b2Vec2 as Vec2
+import Box2D as B2
 
 
-class G_Object():
-    @property
-    def position(self):
+class GameObject():
+    def get_position(self):
         return self.body.position
 
-    @position.setter
-    def position(self, val):
+    def set_position(self, val):
         self.body.position = val
 
-    @property
-    def angle(self):
+    def get_angle(self):
         return self.body.angle
 
-    @angle.setter
-    def angle(self, val):
+    def set_angle(self, val):
         self.body.angle = val
 
     def __init__(self, game, position=(0.0, 0.0), angle=0, dynamic=True, additive=(0.0, 0.0), is_inside=True,
@@ -35,7 +32,7 @@ class G_Object():
         else:
             self.body = body_def(position=position, angle=angle, angularDamping=1.8)
 
-        self.surface = G_Surface()
+        self.surface = GameSurface()
         self.surface.load(image)
         self.body.userData = self
 
@@ -44,7 +41,7 @@ class G_Object():
 
     def draw(self):
         center = self.surface.current.get_rect().center
-        pos = self.game.to_screen(self.position)
+        pos = self.game.to_screen(self.get_position())
         self.game.screen.blit(self.surface.current, Vec2(pos) - Vec2(center))
 
     def update(self):

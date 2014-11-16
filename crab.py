@@ -1,4 +1,4 @@
-from g_object import Personage
+from gameobject import Personage
 
 
 class Crab(Personage):

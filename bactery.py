@@ -1,6 +1,5 @@
-import random
 from personage import Personage
-import Box2D as b2
+import Box2D as B2
 
 
 class Bactery(Personage):
@@ -17,7 +16,7 @@ class Bactery(Personage):
 
         if self.is_you:
             self.center_box = game.world.CreateDynamicBody(position=self.position,
-                                                           shapes=b2.b2PolygonShape(box=(0.5, 0.5)))
+                                                           shapes=B2.b2PolygonShape(box=(0.5, 0.5)))
 
             game.world.CreatePrismaticJoint(bodyA=game.maw.center_box,
                                             bodyB=self.center_box,

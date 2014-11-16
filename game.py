@@ -1,15 +1,14 @@
 import sys
 import pygame
 from pygame.locals import *
-
-import Box2D as b2
-
+import Box2D as B2
 from camera import Camera
-from debug import debuger
+from debug import Debuger
 from test2 import test3, test2, test1
 from bits_masks import Bits
 
-class QueryCallback(b2.b2QueryCallback):
+
+class QueryCallback(B2.b2QueryCallback):
     def __init__(self, p):
         super(QueryCallback, self).__init__()
         self.point = p
@@ -17,7 +16,7 @@ class QueryCallback(b2.b2QueryCallback):
 
     def ReportFixture(self, fixture):
         body = fixture.body
-        if body.type == b2.b2_dynamicBody:
+        if body.type == B2.b2_dynamicBody:
             inside = fixture.TestPoint(self.point)
             if inside:
                 self.fixture = fixture
@@ -51,11 +50,11 @@ class Game():
         pygame.display.set_caption(self.GAME_NAME)
         self.clock = pygame.time.Clock()
         self.camera = Camera(self, offset=(self.center[0] * -1, self.center[1] * -1))
-        aabb = b2.b2AABB()
+        aabb = B2.b2AABB()
         aabb.lowerBound = (-100, -100)
         aabb.upperBound = (100, 100)
-        self.world = b2.b2World(worldAABB=aabb, gravity=(0, 0), doSleep=True)
-        self.debuger = debuger(self)
+        self.world = B2.b2World(worldAABB=aabb, gravity=(0, 0), doSleep=True)
+        self.debuger = Debuger(self)
         self.joint_box = None
         self.mouse_joint = None
         self.maw = None
@@ -72,7 +71,7 @@ class Game():
     def mouse_down(self, pt):
         if self.mouse_joint is not None:
             return
-        aabb = b2.b2AABB(lowerBound=(pt[0] - 0.001, pt[1] - 0.001), upperBound=(pt[0] + 0.001, pt[1] + 0.001))
+        aabb = B2.b2AABB(lowerBound=(pt[0] - 0.001, pt[1] - 0.001), upperBound=(pt[0] + 0.001, pt[1] + 0.001))
         query = QueryCallback(pt)
         self.world.QueryAABB(query, aabb)
         if query.fixture:
@@ -80,7 +79,7 @@ class Game():
 
             self.joint_box = self.world.CreateStaticBody(
                 position=pt,
-                shapes=b2.b2PolygonShape(box=(0.3, 0.3)))
+                shapes=B2.b2PolygonShape(box=(0.3, 0.3)))
             for item in self.joint_box.fixtures:
                 item.filterData.maskBits = Bits.NOTHING_MASK
                 item.filterData.categoryBits = Bits.NOTHING_BITS
@@ -126,12 +125,12 @@ class Game():
                     self.debug = True
 
             if event.type == KEYDOWN and event.key == K_i:
-                obj = self.g_objects[2]
+                obj = self.g_objects[1]
                 obj.is_inside = True
                 self.maw.add_body(obj)
 
             if event.type == KEYDOWN and event.key == K_o:
-                obj = self.g_objects[2]
+                obj = self.g_objects[1]
                 obj.is_inside = False
                 self.maw.add_body(obj, False)
 
@@ -162,7 +161,6 @@ class Game():
 
         if self.debug:
             self.debuger.draw()
-            self.debuger.text_out('zoom :' + str(self.camera.zoom) + ' - ' + str(self.camera.zoom_level), (2, 44))
 
         '''
         for obj in self.g_objects:
