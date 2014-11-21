@@ -39,23 +39,29 @@ class Geo:
         return sqrt(pow(pt2[0] - pt1[0], 2) + pow(pt2[1] - pt1[1], 2))
 
     @staticmethod
-    def angle_to_centre(centre, q, pt):
-        _alpha = Geo.alpha(centre, pt)
+    def to_angle(centre, pt, alpha):
+        return ((cos(alpha) * (pt[0] - centre[0]) + sin(alpha) * (pt[1] - centre[1])),
+                (cos(alpha) * (pt[1] - centre[1]) - sin(alpha) * (pt[0] - centre[0])))
+
+    @staticmethod
+    def angle_to_centre(centre, pt):
+        q = Geo.quarter(centre, pt)
+        alpha = Geo.alpha(centre, pt)
         if q == 1:
-            return pi + _alpha
+            return pi + alpha
         elif q == 2:
-            return 2 * pi - _alpha
+            return 2 * pi - alpha
         elif q == 3:
-            return _alpha
+            return alpha
         elif q == 4:
-            return pi - _alpha
+            return pi - alpha
 
     @staticmethod
     def to_centre(centre, pt):
         c = Geo.length((0, 0), pt)
         _alpha = Geo.alpha(centre, pt)
-        _betha = pi / 2 - _alpha
-        return Vec2(c * sin(_alpha), c * sin(_betha))
+        _beta = pi / 2 - _alpha
+        return Vec2(c * sin(_alpha), c * sin(_beta))
 
     @staticmethod
     def quarter(centre, pt):

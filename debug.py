@@ -12,7 +12,8 @@ class DebugDraw():
         self.width, self.height = game.WIDTH, game.HEIGHT
 
     def draw_point(self, color, center):
-        pygame.draw.circle(self.surface, color, center, 1, 0)
+        pygame.draw.circle(self.surface, color, self.game.to_screen(center), 2, 0)
+
 
     def draw_aabb(self, aabb, color):
         points = [self.game.to_screen(p) for p in [

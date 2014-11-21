@@ -41,24 +41,25 @@ class Personage(Composite):
                                                  bodyB=self.g_body.body)
 
     def move(self, direction=1):
-        pass
+        if direction < 0:
+            if not self.orientation:
+                self.mirror()
+                self.orientation = 1
+        elif direction > 0:
+            if self.orientation:
+                self.mirror()
+                self.orientation = 0
 
     def event(self, event):
         Composite.event(self, event)
-        if True:
+        if self.is_you:
             if event.type == KEYDOWN:
                 key = pygame.key.get_pressed()
 
                 if key[K_LEFT]:
-                    if not self.orientation:
-                        self.mirror()
-                        self.orientation = 1
                     self.MOVE_LEFT = True
 
                 if key[K_RIGHT]:
-                    if self.orientation:
-                        self.mirror()
-                        self.orientation = 0
                     self.MOVE_RIGHT = True
 
             if event.type == KEYUP:
@@ -70,11 +71,15 @@ class Personage(Composite):
     def draw(self):
         Composite.draw(self)
         self._game.debuger.text_out('_' * 4 + '{0:.2f} : {1:.2f}'.format(self.get_position().x, self.get_position().y),
-                                    self._game.to_screen(self.get_position()))
+                                    Vec2(self._game.to_screen(self.get_position())))
         self._game.debuger.text_out('_' * 4 + '{0} - {1}'.format(self.__class__.__name__, self.name),
                                     Vec2(self._game.to_screen(self.get_position())) + Vec2(0, 10))
         self._game.debuger.text_out('_' * 4 + '{0:f}'.format(degrees(self.get_angle())),
-                                    Vec2(self._game.to_screen(self.get_position())) + Vec2(0, 23))
+                                    Vec2(self._game.to_screen(self.get_position())) + Vec2(0, 24))
+        for i in range(0, len(self.joints)):
+            self._game.debuger.text_out(
+                '_' * 4 + '{0:.2f} : {1:.2f}'.format(self.joints[i].anchorA[0], self.joints[i].anchorA[1]),
+                Vec2(self._game.to_screen(self.get_position())) + Vec2(0, 23 + (i + 1) * 12))
 
     def update(self):
         Composite.update(self)

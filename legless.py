@@ -10,9 +10,9 @@ class LegLess(Personage):
 
     def __init__(self, game, position=(0, 0), angle=0, name='', speed=2000, is_you=False, is_inside=True):
         self.body = Circle(game,
-                                position=position,
-                                is_inside=is_inside,
-                                image=sample(self.images, 1)[0])
+                           position=position,
+                           is_inside=is_inside,
+                           image=sample(self.images, 1)[0])
 
         r = self.body.radius
 
@@ -29,9 +29,9 @@ class LegLess(Personage):
                            g_body=self.body)
 
         self.left_hand = MonkeyHand(game, position=self.get_position() + Vec2(0, 0.4 / 2 - r), is_inside=is_inside,
-                                    size=(r, 0.4))
+                                    size=(r, 0.4), name='leftHand')
         self.add_part(self.left_hand)
-
+        '''
         self.left_hand_joint = game.world.CreateRevoluteJoint(bodyA=self.left_hand.shoulder.body,
                                                               bodyB=self.body.body,
                                                               localAnchorA=(0, 0),
@@ -39,14 +39,14 @@ class LegLess(Personage):
         self.joints.append(self.left_hand_joint)
 
         self.left_hand_joint.limitEnabled = True
-        # self.hand_joint.upperLimit = 0
-        #self.hand_joint.lowerLimit = 0
+        '''
 
-        self.right_hand = MonkeyHand(game, position=self.get_position() + Vec2(0, r - 0.4 / 2), angle=pi,
+        self.right_hand = MonkeyHand(game, position=self.get_position() + Vec2(0, r - 0.4 / 2),
                                      is_inside=is_inside,
-                               size=(r, 0.4))
+                                     size=(r, 0.4),
+                                     orientation=1, name='RightHand')
         self.add_part(self.right_hand)
-
+        '''
         self.right_hand_joint = game.world.CreateRevoluteJoint(bodyA=self.right_hand.shoulder.body,
                                                                bodyB=self.body.body,
                                                                localAnchorA=(0, 0),
@@ -54,12 +54,14 @@ class LegLess(Personage):
 
         self.joints.append(self.right_hand_joint)
         self.right_hand_joint.limitEnabled = True
+        '''
 
     def event(self, event):
         Personage.event(self, event)
 
     def move(self, direction=1):
-        self.body.move(direction=direction, speed=self.speed)
+        Personage.move(self, direction)
+        # self.body.move(direction=direction, speed=self.speed)
 
     def draw(self):
         Personage.draw(self)

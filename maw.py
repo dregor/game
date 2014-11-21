@@ -141,5 +141,5 @@ class Maw(GameObject):
                         q = Vec2(q) * -1
                     force = Geo.to_centre(self.get_position(), item.get_position())
                     force = force[0] * q[0] * self.gravity, force[1] * q[1] * self.gravity
-                    item.body.ApplyLinearImpulse(force, item.get_position(), wake=True)
+                    # item.body.ApplyLinearImpulse(force, item.get_position(), wake=True)
         GameObject.update(self)
