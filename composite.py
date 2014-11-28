@@ -1,4 +1,4 @@
-from math import sin, pi
+from math import pi
 from Box2D import b2Vec2 as Vec2
 from bits_masks import Bits
 from gameobject import GameObject
@@ -6,10 +6,9 @@ import Box2D as B2
 from geometry import Geo
 import pygame
 
-
 class Composite():
     def give_all_obj(self):
-        for item in self._parts:
+        for item in self.parts:
             if isinstance(item['obj'], GameObject):
                 yield item['obj']
             elif isinstance(item['obj'], Composite):
@@ -17,24 +16,20 @@ class Composite():
                     yield i
 
     def get_position(self):
-        return Vec2(self._position)
-
+        return self.body.body.position
 
     def set_position(self, val):
-        for obj in self._parts:
-            obj['obj'].set_position(Vec2(val) + Vec2(obj['trans']))
-        self._position = val
+        for obj in self.parts:
+            print(val[0] + obj['trans'][0], val[1] + obj['trans'][1])
+            obj['obj'].set_position((val[0] + obj['trans'][0], val[1] + obj['trans'][1]))
 
     def get_angle(self):
-        return self._angle
+        return self.body.body.angle
 
     def set_angle(self, val):
-        for b in self._parts:
-            b['trans'] = (
-                Geo.length(self.get_position(), b['trans']) * sin(Geo.alpha(self.get_position(), b['trans'])) - val,
-                Geo.length(self.get_position(), b['trans']) * sin(
-                    pi / 2 - Geo.alpha(self.get_position(), b['trans'])) + val)
-            b['obj'].set_position(b['trans'])
+        for b in self.parts:
+            b['trans'] = Geo.to_angle((0, 0), b['trans'], val)
+            b['obj'].set_position(Vec2(b['trans']) + self.get_position())
             b['obj'].set_angle(val)
 
     @property
@@ -46,17 +41,20 @@ class Composite():
         for b in self.give_all_obj():
             b.is_inside = val
 
-    def mirror(self):
-        for part in self._parts:
-            part['obj'].mirror()
-            part['trans'] = (part['trans'][0] * -1, part['trans'][1] * -1)
-            part['obj'].set_position(self.get_position() + part['trans'])
-            # part['obj'].set_angle(part['obj'].get_angle() - pi/2)
+    def mirror(self, orientation=(-1, 1)):
+        for part in self.parts:
+            part['obj'].mirror(orientation=orientation)
+            part['trans'] = (part['trans'][0] * orientation[0], part['trans'][1] * orientation[1])
+            part['obj'].set_position(
+                (self.get_position()[0] + part['trans'][0], self.get_position()[1] + part['trans'][1]))
+            q = Geo.quarter(self.get_position(), part['obj'].get_position())
+            if q == 2 or 4:
+                part['obj'].set_angle(part['obj'].get_angle() * -1)
         for joint in self.joints:
             if joint.type == 1:
                 new_joint = B2.b2RevoluteJointDef()
                 # new_joint.enableLimit = joint.limitEnabled
-                # new_joint.lowerAngle = joint.lowerLimit - pi
+                #new_joint.lowerAngle = joint.lowerLimit - pi
                 #new_joint.upperAngle = joint.upperLimit - pi
             elif joint.type == 2:
                 new_joint = B2.b2PrismaticJointDef
@@ -74,60 +72,71 @@ class Composite():
                 new_joint = B2.b2RopeJointDef
             new_joint.bodyA = joint.bodyA
             new_joint.bodyB = joint.bodyB
-            anchor_a = Geo.to_angle(joint.bodyA.position, joint.anchorA, - joint.bodyA.angle)
-            anchor_a -= joint.bodyA.position
-            new_joint.localAnchorA = (anchor_a[0] * -1, anchor_a[1] * -1)
-            anchor_b = Geo.to_angle(joint.bodyB.position, joint.anchorB, - joint.bodyB.angle)
-            anchor_b -= joint.bodyB.position
-            new_joint.localAnchorB = (anchor_b[0] * -1, anchor_b[1] * -1)
+            print(joint.anchorA)
+            print(joint.anchorB)
+            anchor_a = Geo.to_angle(joint.bodyA.position, joint.anchorA, joint.bodyA.angle)
+            new_joint.localAnchorA = (anchor_a[0] * orientation[0], anchor_a[1] * orientation[1])
+            anchor_b = Geo.to_angle(joint.bodyB.position, joint.anchorB, joint.bodyB.angle)
+            new_joint.localAnchorB = (anchor_b[0] * orientation[0], anchor_b[1] * orientation[1])
             new_joint.collideConnected = joint.collideConnected
-            self._game.world.DestroyJoint(joint)
-            self._game.world.CreateJoint(new_joint)
+            self.game.world.DestroyJoint(joint)
+            self.game.world.CreateJoint(new_joint)
 
-    def __init__(self, game, position=(0, 0), angle=0, is_inside=True, name=''):
-        self._position = Vec2(position)
+    def __init__(self, game, position=(0, 0), angle=0, is_inside=True, name='', body=None):
         self.name = name
-        self._angle = angle
         self._is_inside = is_inside
-        self._game = game
-        self._parts = []
+        self.game = game
+        self.parts = []
         self.joints = []
+        self.old_angle = angle
+        if body:
+            self.body = body
+        else:
+            self.body = self.game.world.CreateDynamicBody(
+                position=position,
+                shapes=B2.b2PolygonShape(box=(0.5, 0.5)))
+            for item in self.body.fixtures:
+                item.filterData.maskBits = Bits.NOTHING_MASK
+                item.filterData.categoryBits = Bits.NOTHING_BITS
+        self.add_part(self.body)
 
     def add_part(self, obj):
-        trans = Vec2(self.get_position() - obj.get_position())
+        trans = Vec2(obj.get_position() - self.get_position())
         if isinstance(obj, GameObject):
             for fixture in obj.body.fixtures:
                 fixture.filterData.maskBits = Bits.PARTS_MASK
                 fixture.filterData.categoryBits = Bits.PARTS_BITS
-        self._parts.append({'obj': obj, 'trans': trans})
+        self.parts.append({'obj': obj, 'trans': trans})
 
     def event(self, event):
-        for item in self._parts:
+        for item in self.parts:
             item['obj'].event(event)
 
     def update(self):
-
-        for index, item in enumerate(self._parts):
-
-            if isinstance(item['obj'], GameObject):
-                new_angle = item['obj'].body.angle
-            else:
-                new_angle = item['obj']._parts[0]['obj'].body.angle
-
-            old_angle = self.get_angle()
-
-            if index == 0:
-                self._position = item['obj'].body.position
-                self._angle = new_angle
-
-            #item['trans'] = Geo.to_angle(self.get_position(), item['trans'], old_angle - new_angle)
+        change_angle = self.get_angle() - self.old_angle
+        for item in self.parts:
+            if change_angle != 0:
+                item['trans'] = Geo.to_angle((0, 0), item['trans'], -1 * change_angle)
 
             item['obj'].update()
-
+        self.old_angle = self.get_angle()
 
     def draw(self):
-        for item in self._parts:
+        for item in self.parts:
             item['obj'].draw()
-            # self._game.debuger.DebugDraw.draw_circle_shape()  raw_point((254,254,254),)
-            pygame.draw.circle(self._game.screen, (20, 20, 20), self._game.to_screen(Vec2(item['trans'])),
-                               20 * self._game.camera.zoom, 1)
+            pt = Vec2(item['trans']) + self.get_position()
+            pygame.draw.circle(self.game.screen, (20, 0, 0), self.game.to_screen(pt),
+                               int(2 * self.game.camera.zoom), 1)
+
+        '''
+        self.game.debuger.text_out('_' * 4 + '{0:.2f} : {1:.2f}'.format(self.get_position().x, self.get_position().y),
+                                    Vec2(self.game.to_screen(self.get_position())))
+        self.game.debuger.text_out('_' * 4 + '{0} - {1}'.format(self.__class__.__name__, self.name),
+                                    Vec2(self.game.to_screen(self.get_position())) + Vec2(0, 10))
+        self.game.debuger.text_out('_' * 4 + '{0:f}'.format(degrees(self.get_angle())),
+                                    Vec2(self.game.to_screen(self.get_position())) + Vec2(0, 24))
+        for i in range(0, len(self.joints)):
+            self.game.debuger.text_out(
+                '_' * 4 + '{0:.2f} : {1:.2f}'.format(self.joints[i].anchorA[0], self.joints[i].anchorA[1]),
+                Vec2(self.game.to_screen(self.get_position())) + Vec2(0, 23 + (i + 1) * 12))
+        '''

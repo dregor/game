@@ -8,6 +8,7 @@ class GameObject():
         return self.body.position
 
     def set_position(self, val):
+        print(self.name)
         self.body.position = val
 
     def get_angle(self):
@@ -25,7 +26,7 @@ class GameObject():
         if dynamic:
             body_def = self.game.world.CreateDynamicBody
         else:
-            body_def = self.game.world.CreateStaticbody
+            body_def = self.game.world.CreateStaticBody
 
         if body:
             self.body = body

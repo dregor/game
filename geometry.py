@@ -40,8 +40,8 @@ class Geo:
 
     @staticmethod
     def to_angle(centre, pt, alpha):
-        return ((cos(alpha) * (pt[0] - centre[0]) + sin(alpha) * (pt[1] - centre[1])),
-                (cos(alpha) * (pt[1] - centre[1]) - sin(alpha) * (pt[0] - centre[0])))
+        return ((round(cos(alpha), 15) * (pt[0] - centre[0]) + round(sin(alpha), 15) * (pt[1] - centre[1])),
+                (round(cos(alpha), 15) * (pt[1] - centre[1]) - round(sin(alpha), 15) * (pt[0] - centre[0])))
 
     @staticmethod
     def angle_to_centre(centre, pt):

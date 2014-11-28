@@ -9,12 +9,12 @@ class LegLess(Personage):
     images = ['images/ameb.gif', 'images/bakt.gif', 'images/microb.gif']
 
     def __init__(self, game, position=(0, 0), angle=0, name='', speed=2000, is_you=False, is_inside=True):
-        self.body = Circle(game,
-                           position=position,
-                           is_inside=is_inside,
-                           image=sample(self.images, 1)[0])
+        body = Circle(game,
+                      position=position,
+                      is_inside=is_inside,
+                      image=sample(self.images, 1)[0])
 
-        r = self.body.radius
+        r = body.radius
 
         self.additive = (0, r)
 
@@ -26,26 +26,28 @@ class LegLess(Personage):
                            speed=speed,
                            is_you=is_you,
                            is_inside=is_inside,
-                           g_body=self.body)
+                           body=body)
 
-        self.left_hand = MonkeyHand(game, position=self.get_position() + Vec2(0, 0.4 / 2 - r), is_inside=is_inside,
+        self.left_hand = MonkeyHand(game, position=self.get_position() + Vec2(0, 2 * 0.4 - r), is_inside=is_inside,
                                     size=(r, 0.4), name='leftHand')
         self.add_part(self.left_hand)
+
         '''
         self.left_hand_joint = game.world.CreateRevoluteJoint(bodyA=self.left_hand.shoulder.body,
                                                               bodyB=self.body.body,
                                                               localAnchorA=(0, 0),
                                                               localAnchorB=(0, 2 * 0.4 - r))
         self.joints.append(self.left_hand_joint)
-
         self.left_hand_joint.limitEnabled = True
         '''
 
-        self.right_hand = MonkeyHand(game, position=self.get_position() + Vec2(0, r - 0.4 / 2),
+        self.right_hand = MonkeyHand(game, position=self.get_position() + Vec2(0, r - 2 * 0.4),
                                      is_inside=is_inside,
                                      size=(r, 0.4),
-                                     orientation=1, name='RightHand')
+                                     name='RightHand')
+        self.right_hand.mirror(orientation=(-1, -1))
         self.add_part(self.right_hand)
+
         '''
         self.right_hand_joint = game.world.CreateRevoluteJoint(bodyA=self.right_hand.shoulder.body,
                                                                bodyB=self.body.body,
