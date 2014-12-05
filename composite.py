@@ -6,6 +6,7 @@ import Box2D as B2
 from geometry import Geo
 import pygame
 
+
 class Composite():
     def give_all_obj(self):
         for item in self.parts:
@@ -20,7 +21,6 @@ class Composite():
 
     def set_position(self, val):
         for obj in self.parts:
-            print(val[0] + obj['trans'][0], val[1] + obj['trans'][1])
             obj['obj'].set_position((val[0] + obj['trans'][0], val[1] + obj['trans'][1]))
 
     def get_angle(self):
@@ -47,9 +47,12 @@ class Composite():
             part['trans'] = (part['trans'][0] * orientation[0], part['trans'][1] * orientation[1])
             part['obj'].set_position(
                 (self.get_position()[0] + part['trans'][0], self.get_position()[1] + part['trans'][1]))
+            '''
             q = Geo.quarter(self.get_position(), part['obj'].get_position())
             if q == 2 or 4:
-                part['obj'].set_angle(part['obj'].get_angle() * -1)
+            '''
+            part['obj'].set_angle(part['obj'].get_angle() * -2)
+
         for joint in self.joints:
             if joint.type == 1:
                 new_joint = B2.b2RevoluteJointDef()
@@ -72,8 +75,6 @@ class Composite():
                 new_joint = B2.b2RopeJointDef
             new_joint.bodyA = joint.bodyA
             new_joint.bodyB = joint.bodyB
-            print(joint.anchorA)
-            print(joint.anchorB)
             anchor_a = Geo.to_angle(joint.bodyA.position, joint.anchorA, joint.bodyA.angle)
             new_joint.localAnchorA = (anchor_a[0] * orientation[0], anchor_a[1] * orientation[1])
             anchor_b = Geo.to_angle(joint.bodyB.position, joint.anchorB, joint.bodyB.angle)
@@ -123,10 +124,10 @@ class Composite():
 
     def draw(self):
         for item in self.parts:
-            item['obj'].draw()
+            # item['obj'].draw()
             pt = Vec2(item['trans']) + self.get_position()
             pygame.draw.circle(self.game.screen, (20, 0, 0), self.game.to_screen(pt),
-                               int(2 * self.game.camera.zoom), 1)
+                               int(3 * self.game.camera.zoom), 1)
 
         '''
         self.game.debuger.text_out('_' * 4 + '{0:.2f} : {1:.2f}'.format(self.get_position().x, self.get_position().y),

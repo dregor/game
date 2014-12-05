@@ -71,11 +71,14 @@ class Geo:
                 return 1
             else:
                 return 2
-        else:
+        elif pt[0] < 0:
             if pt[1] > 0:
                 return 4
             else:
                 return 3
+        else:
+            return 0
+
 
     @staticmethod
     def quarter_direction(pt1, pt2):
@@ -88,3 +91,5 @@ class Geo:
             return -1, -1
         elif q == 4:
             return -1, 1
+        else:
+            return 1, 1

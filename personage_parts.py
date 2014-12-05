@@ -75,7 +75,6 @@ class FixtureObject(GameObject):
             gi = i.filterData.groupIndex
             mi = i.filterData.maskBits
             self.body.DestroyFixture(i)
-        print(fixtures)
         for i in fixtures:
             fixture = self.body.CreatePolygonFixture(vertices=i,
                                                      density=self.density,
@@ -86,6 +85,7 @@ class FixtureObject(GameObject):
 
     def draw(self):
         GameObject.draw(self)
+
 
 class MonkeyHand(Composite):
     def __init__(self, game, position=(0, 0), angle=0, is_inside=True, size=(1, 0.4), name='Hand'):

@@ -158,6 +158,7 @@ class Debuger():
         self.text_out('mouse (world): {0:.3f}, {1:.3f}'.format(self.game.to_world(pos)[0], self.game.to_world(pos)[1]),
                       (2, 30))
         self.text_out('zoom : {0:.3f}, {1:.3f}'.format(self.game.camera.zoom, self.game.camera.zoom_level), (2, 44))
+        self.text_out('time : ' + str(pygame.time.get_ticks()), (2, 58))
 
     def update(self):
         pass

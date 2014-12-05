@@ -8,14 +8,18 @@ class GameObject():
         return self.body.position
 
     def set_position(self, val):
-        print(self.name)
         self.body.position = val
 
     def get_angle(self):
         return self.body.angle
 
     def set_angle(self, val):
+        print('***')
+        print(self.body.angle)
+        print('val' + str(val))
         self.body.angle = val
+        print(self.body.angle)
+        print('***')
 
     def __init__(self, game, position=(0.0, 0.0), angle=0, dynamic=True, additive=(0.0, 0.0), is_inside=True,
                  image='default.png', body=None):

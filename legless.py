@@ -2,13 +2,15 @@ from personage import Personage
 from Box2D import b2Vec2 as Vec2
 from personage_parts import MonkeyHand, Circle
 from random import sample
-from math import pi
+import pygame
 
 
 class LegLess(Personage):
+    SPIN = pygame.USEREVENT + 1
     images = ['images/ameb.gif', 'images/bakt.gif', 'images/microb.gif']
 
     def __init__(self, game, position=(0, 0), angle=0, name='', speed=2000, is_you=False, is_inside=True):
+        pygame.time.set_timer(self.SPIN, 1000)
         body = Circle(game,
                       position=position,
                       is_inside=is_inside,
@@ -60,6 +62,9 @@ class LegLess(Personage):
 
     def event(self, event):
         Personage.event(self, event)
+        if event.type == self.SPIN:
+            self.body.body.angle += 0.1
+            pygame.time.set_timer(self.SPIN, 1000)
 
     def move(self, direction=1):
         Personage.move(self, direction)
